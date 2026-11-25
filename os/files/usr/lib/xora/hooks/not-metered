@@ -1,0 +1,4 @@
+#!/usr/bin/bash
+# exit 0 = not metered (go ahead), 1 = metered (skip)
+state=$(nmcli -t -f GENERAL.METERED dev show 2>/dev/null | grep -m1 -E 'yes' || true)
+[ -z "$state" ]

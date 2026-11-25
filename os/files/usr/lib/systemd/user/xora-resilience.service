@@ -1,0 +1,12 @@
+[Unit]
+Description=XORA Resilience: regular Space checkpoints, safe shutdown on low battery
+After=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/xora resilience watch
+Restart=on-failure
+RestartSec=30
+Nice=10
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,166 @@
+# XORA OS — image-based OS built on Fedora Atomic (Kinoite = Fedora Atomic + KDE Plasma).
+#
+#   Build:   ./build.sh                 (→ localhost/xora-os:latest)
+#   ISO:     ./build-iso.sh             (→ output/bootiso/install.iso, needs sudo)
+#   Switch an existing Fedora Atomic machine:  sudo bootc switch ghcr.io/<you>/xora-os:latest
+#
+# What comes from where:
+#   Fedora Atomic / bootc  → read-only system, atomic A/B updates, rollback, Secure Boot
+#   KDE Plasma             → desktop, Activities (one per Space), KRunner universal search
+#   XORA (this repo)       → look, Kali-style terminal, and the `xora` command:
+#                            Spaces · Timeline · Fabric · Explain · Ask · Privacy · Data · Resilience
+ARG FEDORA_VERSION=44
+FROM quay.io/fedora/fedora-kinoite:${FEDORA_VERSION}
+# where installed machines take updates from; the GitHub build sets ghcr.io/<owner>/xora-os:latest
+ARG XORA_IMAGE=localhost/xora-os:latest
+
+LABEL org.opencontainers.image.title="XORA OS" \
+      org.opencontainers.image.description="Your devices. Your projects. One connected workspace." \
+      containers.bootc="1" \
+      ostree.bootable="1"
+
+# ---- core packages (the build fails if any of these is missing)
+RUN ARCHSKIP="$([ "$(uname -m)" = x86_64 ] || echo --skip-unavailable)"; dnf -y install $ARCHSKIP \
+        # terminal: Kali-style zsh
+        zsh zsh-autosuggestions zsh-syntax-highlighting fastfetch \
+        # xora command
+        python3-pyyaml rsync openssh-clients openssh-server /usr/bin/secret-tool \
+        # Timeline (Btrfs snapshots)
+        btrfs-progs snapper \
+        # Fabric: secure links, LAN discovery, QR pairing, peer-to-peer sync
+        wireguard-tools avahi avahi-tools nss-mdns qrencode syncthing \
+        # Resilience: UPS support, data usage history
+        nut-client vnstat \
+        # apps: Linux apps in containers, Android apps
+        distrobox waydroid \
+    && dnf clean all
+
+# ---- optional packages: installed when this Fedora release has them
+#      sccache = shared compile cache for Fabric builds
+#      (local AI is opt-in with `xora ai enable`: Fedora's ollama brings ~5 GB of GPU libraries,
+#       too heavy for a lean default image on expensive data)
+RUN dnf -y install --skip-unavailable --setopt=install_weak_deps=False sccache nethogs source-foundry-hack-fonts && dnf clean all
+
+# ---- XORA terminal (clean dark window with a header bar) and privacy tools
+#      Anon mode (Tor + kill switch), metadata cleaner, MAC changer, app sandbox, USB device guard, password manager
+RUN ARCHSKIP="$([ "$(uname -m)" = x86_64 ] || echo --skip-unavailable)"; dnf -y install $ARCHSKIP --setopt=install_weak_deps=False \
+        ptyxis \
+        tor torsocks obfs4 nyx mat2 macchanger firejail usbguard keepassxc \
+    && dnf clean all
+
+# ---- updates can't break it: boot health checks; 3 failed boots roll the OS back automatically
+RUN ARCHSKIP="$([ "$(uname -m)" = x86_64 ] || echo --skip-unavailable)"; dnf -y install $ARCHSKIP --setopt=install_weak_deps=False greenboot greenboot-default-health-checks && dnf clean all
+
+# ---- VPNs of every kind in the network menu (WireGuard, OpenVPN and OpenConnect are already there)
+RUN dnf -y install --skip-unavailable --setopt=install_weak_deps=False \
+        NetworkManager-l2tp plasma-nm-l2tp NetworkManager-vpnc plasma-nm-vpnc NetworkManager-strongswan \
+    && dnf clean all
+
+# ---- security toolkit (the rest of Kali's tools: `xora tools kali`, in a container)
+RUN ARCHSKIP="$([ "$(uname -m)" = x86_64 ] || echo --skip-unavailable)"; dnf -y install $ARCHSKIP --setopt=install_weak_deps=False \
+        nmap nmap-ncat wireshark tcpdump hping3 masscan mtr socat whois bind-utils dsniff \
+        john hashcat hydra aircrack-ng gobuster ffuf \
+        radare2 binwalk yara \
+        lynis chkrootkit rkhunter clamav clamav-update \
+    && dnf clean all
+
+# ---- DevOps toolkit
+RUN ARCHSKIP="$([ "$(uname -m)" = x86_64 ] || echo --skip-unavailable)"; dnf -y install $ARCHSKIP --setopt=install_weak_deps=False \
+        ansible-core opentofu helm k9s awscli2 gh git-lfs jq yq httpie \
+        podman-compose buildah skopeo trivy \
+    && dnf -y install --skip-unavailable --setopt=install_weak_deps=False kubernetes-client kubectl \
+    && dnf clean all
+
+# ---- boot splash engine for the XORA Plymouth theme
+RUN ARCHSKIP="$([ "$(uname -m)" = x86_64 ] || echo --skip-unavailable)"; dnf -y install $ARCHSKIP plymouth-plugin-script && dnf clean all
+
+# ---- no Fedora branding where people see it: Welcome Center ("Welcome to Fedora!"), Fedora global
+#      themes, wallpapers and bookmarks. --nodeps because plasma-desktop formally requires the welcome
+#      app; XORA Center replaces it. (fedora-release, repos and keys stay: updates need them.)
+RUN rpm -e --nodeps plasma-welcome plasma-welcome-fedora plasma-lookandfeel-fedora \
+        fedora-workstation-backgrounds fedora-bookmarks \
+    && rm -rf /usr/share/plasma/look-and-feel/org.fedoraproject.* \
+    && ! rpm -q plasma-welcome
+
+# ---- XORA files: theme, wallpaper, boot splash, Konsole, zsh, services
+COPY files/ /
+
+# ---- the xora command
+COPY --from=cli xora/ /usr/lib/xora/xora/
+
+RUN set -eux; \
+    # identity: keep ID=fedora so Fedora tooling keeps working, brand everything people see
+    sed -i \
+        -e 's/^NAME=.*/NAME="XORA OS"/' \
+        -e 's/^PRETTY_NAME=.*/PRETTY_NAME="XORA OS 0.1 (Dawn)"/' \
+        -e 's/^LOGO=.*/LOGO=xora-logo/' \
+        -e 's|^HOME_URL=.*|HOME_URL="https://xora.dev"|' \
+        -e 's/^VARIANT=.*/VARIANT="Dawn"/' \
+        -e 's/^VARIANT_ID=.*/VARIANT_ID=xora/' \
+        -e 's/^DEFAULT_HOSTNAME=.*/DEFAULT_HOSTNAME="xora"/' \
+        -e 's/^VERSION=.*/VERSION="0.1 (Dawn)"/' \
+        -e 's/^ANSI_COLOR=.*/ANSI_COLOR="0;38;2;30;200;240"/' \
+        -e 's|^CPE_NAME=.*|CPE_NAME="cpe:/o:xora:xora:0.1"|' \
+        -e 's|^DOCUMENTATION_URL=.*|DOCUMENTATION_URL="https://xora.dev/docs"|' \
+        -e 's|^SUPPORT_URL=.*|SUPPORT_URL="https://xora.dev/support"|' \
+        -e 's|^BUG_REPORT_URL=.*|BUG_REPORT_URL="https://xora.dev/issues"|' \
+        -e '/^REDHAT_/d' -e '/^SUPPORT_END=/d' \
+        /usr/lib/os-release; \
+    # "Fedora release 44" → XORA (system-release and redhat-release point at this file)
+    printf 'XORA OS release 0.1 (Dawn)\n' > "$(readlink -f /etc/fedora-release)"; \
+    grep -q '^VARIANT_ID=' /usr/lib/os-release || echo 'VARIANT_ID=xora' >> /usr/lib/os-release; \
+    grep -q '^LOGO=' /usr/lib/os-release || echo 'LOGO=xora-logo' >> /usr/lib/os-release; \
+    grep -q "^DEFAULT_HOSTNAME=" /usr/lib/os-release || echo "DEFAULT_HOSTNAME=\"xora\"" >> /usr/lib/os-release; \
+    echo 'XORA_VERSION=0.1' >> /usr/lib/os-release; \
+    #
+    # XORA has its own first-run setup (XORA Center) and the installer creates the user,
+    # so KDE's Plasma Setup wizard is marked done
+    touch /etc/plasma-setup-done; \
+    #
+    # privacy: incoming connections dropped (XORA zone) instead of the base zone that opened 1025-65535
+    sed -i 's/^DefaultZone=.*/DefaultZone=xora/' /etc/firewalld/firewalld.conf; \
+    grep -q '^DefaultZone=xora' /etc/firewalld/firewalld.conf; \
+    #
+    # every new user gets ~/Projects (the Files sidebar's Projects place)
+    mkdir -p /etc/skel/Projects; \
+    # zsh for every new user, with the Kali-style XORA prompt from /etc/skel/.zshrc
+    sed -i 's|^SHELL=.*|SHELL=/usr/bin/zsh|' /etc/default/useradd; \
+    #
+    # system services
+    systemctl enable avahi-daemon.service sshd.service vnstat.service; \
+    # RapidBoot: don't hold up boot waiting for the network
+    systemctl disable NetworkManager-wait-online.service || true; \
+    # automatic OS updates: at night, skipped on metered connections (see drop-ins in /usr/lib/systemd)
+    systemctl enable bootc-fetch-apply-updates.timer || true; \
+    #
+    # per-user services: Timeline cleanup, Resilience watcher, Fabric mirror, Explain cards
+    systemctl --global enable xora-timeline-prune.timer xora-resilience.service xora-mirror.timer xora-explain.service; \
+    # per-app data budgets; boot health checks with automatic rollback
+    systemctl enable xora-netbudget.service greenboot-healthcheck.service xora-image-origin.service; \
+    # the public image this build belongs to (installs switch their update source to it on first boot)
+    echo "${XORA_IMAGE}" > /usr/lib/xora/image-ref; \
+    #
+    # UPS: NUT tells XORA when mains power is lost
+    if [ -f /etc/ups/upsmon.conf ]; then \
+        printf '\n# XORA: checkpoint Spaces on power loss\nNOTIFYCMD /usr/lib/xora/hooks/nut-notify\nNOTIFYFLAG ONBATT SYSLOG+WALL+EXEC\nNOTIFYFLAG LOWBATT SYSLOG+WALL+EXEC\n' >> /etc/ups/upsmon.conf; \
+    fi; \
+    #
+    # login screen: XORA wallpaper on the Breeze SDDM theme (if this release uses SDDM)
+    if [ -d /usr/share/sddm/themes/breeze ]; then \
+        printf '[General]\nbackground=/usr/share/xora/background.png\ntype=image\n' > /usr/share/sddm/themes/breeze/theme.conf.user; \
+    fi; \
+    #
+    # boot splash, then rebuild the initramfs so it is used at boot
+    plymouth-set-default-theme xora; \
+    KVER="$(ls /usr/lib/modules | sort -V | tail -1)"; \
+    dracut --no-hostonly --kver "$KVER" --reproducible --zstd -v --add ostree -f "/usr/lib/modules/$KVER/initramfs.img"; \
+    chmod 0644 "/usr/lib/modules/$KVER/initramfs.img"; \
+    #
+    # sanity: the xora command must run
+    /usr/bin/xora --version
+
+# ---- login screen (Fedora 44 uses Plasma Login Manager): XORA wallpaper behind the greeter
+RUN sed -i 's|file:///usr/share/wallpapers/Fedora/|file:///usr/share/wallpapers/XORA/|g' /usr/lib/plasmalogin/defaults.conf \
+    && grep -q wallpapers/XORA /usr/lib/plasmalogin/defaults.conf
+
+RUN bootc container lint

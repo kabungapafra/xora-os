@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Install with XORA
+Comment=Installs .deb, .rpm and AppImage apps without touching the system (they appear in the app menu)
+Icon=system-software-install
+Exec=xora-term --hold -- xora install %f
+MimeType=application/vnd.debian.binary-package;application/x-deb;application/x-rpm;application/x-redhat-package-manager;application/vnd.appimage;application/x-iso9660-appimage;application/vnd.flatpak.ref;
+NoDisplay=true
+Categories=Utility;

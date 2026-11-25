@@ -1,0 +1,15 @@
+{
+  "KPackageStructure": "Plasma/Applet",
+  "X-Plasma-API-Minimum-Version": "6.0",
+  "KPlugin": {
+    "Id": "org.xora.fabric",
+    "Name": "XORA Fabric",
+    "Description": "How many of your devices are linked; open Fabric or add a device",
+    "Icon": "network-workgroup",
+    "Category": "System Information",
+    "Authors": [{ "Name": "XORA OS" }],
+    "License": "GPL-3.0-or-later",
+    "Version": "0.1",
+    "FormFactors": ["desktop", "panel"]
+  }
+}

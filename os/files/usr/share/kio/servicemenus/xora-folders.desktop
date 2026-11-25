@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Service
+MimeType=inode/directory;
+Actions=xoraSpace;
+X-KDE-Priority=TopLevel
+
+[Desktop Action xoraSpace]
+Name=Make this folder a Space
+Icon=folder-xora-space
+Exec=xora-term --hold -- xora space create --dir %f

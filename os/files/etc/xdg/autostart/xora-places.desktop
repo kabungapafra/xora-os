@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=XORA Places
+Comment=Keep Projects, Spaces and linked devices in the Files sidebar
+Exec=sh -c 'sleep 20; xora places sync'
+NoDisplay=true
+OnlyShowIn=KDE;

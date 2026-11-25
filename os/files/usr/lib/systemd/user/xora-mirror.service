@@ -1,0 +1,9 @@
+[Unit]
+Description=XORA Fabric: copy Spaces to paired devices (nothing is lost)
+ConditionPathExists=%h/.config/xora/devices.yaml
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/xora fabric mirror
+Nice=15
+IOSchedulingClass=idle

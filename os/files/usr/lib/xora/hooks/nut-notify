@@ -1,0 +1,11 @@
+#!/usr/bin/bash
+# Set in /etc/ups/upsmon.conf:  NOTIFYCMD /usr/lib/xora/hooks/nut-notify   and   NOTIFYFLAG ONBATT SYSLOG+EXEC
+# Runs xora's checkpoint for every logged-in user.
+case "$NOTIFYTYPE" in
+  ONBATT|LOWBATT)
+    for uid in $(loginctl list-users --no-legend | awk '{print $1}'); do
+      user=$(id -nu "$uid")
+      runuser -u "$user" -- env XDG_RUNTIME_DIR=/run/user/$uid /usr/bin/xora resilience onbattery &
+    done
+    wait ;;
+esac

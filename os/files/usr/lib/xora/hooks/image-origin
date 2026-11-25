@@ -1,0 +1,11 @@
+#!/bin/bash
+# Make this machine take updates from XORA's public image (written into the image at build time).
+# Installs from an ISO or a local build otherwise point at a name only that build machine has.
+# --mutate-in-place only changes where updates come from: nothing is downloaded, nothing reboots.
+set -euo pipefail
+want="$(cat /usr/lib/xora/image-ref 2>/dev/null || true)"
+case "$want" in ""|localhost/*) echo "no public image configured in this build"; exit 0 ;; esac
+have="$(bootc status --json | python3 -c 'import json,sys; print(json.load(sys.stdin)["status"]["booted"]["image"]["image"]["image"])' 2>/dev/null || true)"
+if [ "$have" = "$want" ]; then echo "updates already come from $want"; exit 0; fi
+bootc switch --mutate-in-place --transport registry "$want"
+echo "updates now come from $want (was: ${have:-unknown})"

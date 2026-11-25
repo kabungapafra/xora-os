@@ -1,0 +1,18 @@
+# TEST VMs ONLY: unattended install with a KNOWN password (user pafra / password xora). Never use this for a real machine or a public ISO.
+# The real installer (os/iso.toml) asks for these instead.
+[customizations.installer.kickstart]
+contents = """
+text
+lang en_US.UTF-8
+keyboard us
+timezone Africa/Nairobi --utc
+zerombr
+clearpart --all --initlabel
+autopart --type=btrfs --noswap
+network --bootproto=dhcp --activate
+rootpw --lock
+user --name=pafra --gecos="Pafra" --password=xora --plaintext --groups=wheel
+firstboot --disable
+xconfig --startxonboot
+reboot --eject
+"""

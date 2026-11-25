@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XORA OS</title>
+<link rel="icon" href="../assets/xora-mark.svg">
+<link rel="stylesheet" href="css/xora.css">
+</head>
+<body>
+  <!-- Boot -->
+  <div id="boot" class="screen">
+    <div class="boot-mark" data-logo="mark"></div>
+    <div class="boot-bar"><span></span></div>
+    <div class="boot-log" id="bootLog"></div>
+  </div>
+
+  <!-- First-boot setup -->
+  <div id="setup" class="screen hidden">
+    <div class="setup-card">
+      <div class="setup-logo" data-logo="full"></div>
+      <div class="setup-step" data-step="0">
+        <h1>Welcome to XORA</h1>
+        <p>Let's set up your computer. It takes less than a minute.</p>
+        <label>Your name<input id="setupName" placeholder="Pafra" autocomplete="off"></label>
+        <label>Username<input id="setupUser" placeholder="pafra" autocomplete="off"></label>
+        <button class="primary" data-next>Continue</button>
+      </div>
+      <div class="setup-step hidden" data-step="1">
+        <h1>Pick a highlight colour</h1>
+        <p>You can change this later in Settings.</p>
+        <div class="swatches" id="setupSwatches"></div>
+        <button class="primary" data-next>Continue</button>
+      </div>
+      <div class="setup-step hidden" data-step="2">
+        <h1>Your first Space</h1>
+        <p>A Space keeps one project's folders, terminals and services together.</p>
+        <label>Space name<input id="setupSpace" placeholder="attndi · backend" autocomplete="off"></label>
+        <button class="primary" data-finish>Start using XORA</button>
+      </div>
+      <div class="setup-dots"><i class="on"></i><i></i><i></i></div>
+    </div>
+  </div>
+
+  <!-- Desktop -->
+  <div id="desktop" class="screen hidden">
+    <div class="wallpaper"><div class="wall-mark" data-logo="mark"></div></div>
+    <header class="topbar">
+      <button class="tb-logo" id="tbLaunch" title="Launcher" data-logo="full"></button>
+      <div class="tb-spaces" id="tbSpaces"></div>
+      <div class="tb-right">
+        <span class="tb-chip" id="tbFabric" title="Fabric devices"></span>
+        <span class="tb-icon" title="Network">◉</span>
+        <span id="tbClock"></span>
+      </div>
+    </header>
+    <div id="windows"></div>
+    <nav class="dock" id="dock"></nav>
+    <div id="launcher" class="hidden">
+      <div class="launcher-box">
+        <input id="launcherInput" placeholder="Search apps, files and commands…" autocomplete="off">
+        <div id="launcherResults"></div>
+      </div>
+    </div>
+    <div id="toasts"></div>
+  </div>
+
+  <script src="js/logo.js"></script>
+  <script src="js/kernel.js"></script>
+  <script src="js/wm.js"></script>
+  <script src="js/terminal.js"></script>
+  <script src="js/apps.js"></script>
+  <script src="js/boot.js"></script>
+</body>
+</html>

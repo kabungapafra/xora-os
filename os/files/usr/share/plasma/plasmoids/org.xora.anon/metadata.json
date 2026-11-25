@@ -1,0 +1,15 @@
+{
+  "KPackageStructure": "Plasma/Applet",
+  "X-Plasma-API-Minimum-Version": "6.0",
+  "KPlugin": {
+    "Id": "org.xora.anon",
+    "Name": "XORA Protection (VPN · Anon mode)",
+    "Description": "Shows whether a VPN or Anon mode (Tor) protects this connection; turn them and the kill switch on or off",
+    "Icon": "security-high",
+    "Category": "System Information",
+    "Authors": [{ "Name": "XORA OS" }],
+    "License": "GPL-3.0-or-later",
+    "Version": "0.1",
+    "FormFactors": ["desktop", "panel"]
+  }
+}

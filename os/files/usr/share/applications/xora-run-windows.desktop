@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Run Windows program
+Comment=Runs .exe and .msi files with Bottles (Wine), each in its own sandbox
+Icon=wine
+Exec=xora-term --hold -- xora install %f
+MimeType=application/x-ms-dos-executable;application/x-msdownload;application/x-msi;application/vnd.microsoft.portable-executable;application/x-ms-shortcut;
+NoDisplay=true
+Categories=Utility;

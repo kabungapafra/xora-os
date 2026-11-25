@@ -1,0 +1,13 @@
+[General]
+ColorScheme=XoraDark
+AccentColor=30,200,240
+accentColorFromWallpaper=false
+TerminalApplication=xora-term
+TerminalService=org.gnome.Ptyxis.desktop
+
+[Icons]
+Theme=XORA
+
+[KDE]
+LookAndFeelPackage=org.xora.desktop
+widgetStyle=Breeze

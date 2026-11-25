@@ -1,0 +1,11 @@
+# XORA Anon mode: a dedicated Tor instance that carries ALL of this computer's traffic.
+# Separate from any Tor the user runs themselves (different ports and data directory).
+DataDirectory /var/lib/xora-anon
+RunAsDaemon 0
+SocksPort 127.0.0.1:9150
+TransPort 127.0.0.1:9040 IsolateClientAddr IsolateDestAddr IsolateDestPort
+DNSPort 127.0.0.1:5353
+VirtualAddrNetworkIPv4 10.192.0.0/10
+AutomapHostsOnResolve 1
+AvoidDiskWrites 1
+Log notice stdout

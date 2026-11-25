@@ -1,0 +1,197 @@
+#!/usr/bin/env python3
+"""XORA per-app data budgets (runs as root: xora-netbudget.service).
+
+Every desktop app runs in its own cgroup (Plasma starts apps as app-<id>@….service, Flatpaks as
+app-flatpak-<id>-….scope). For each one this daemon adds nftables rules that
+  · mark the app's connections (socket cgroupv2 → ct mark) and count its upload,
+  · count download on connections carrying that mark,
+so both directions are counted per app. When an app reaches its daily budget its marked traffic is
+dropped until midnight (or until you allow more). Status for the desktop: /run/xora/netbudget.json.
+
+  netbudget daemon                 the service
+  netbudget set APP BYTES          budget per day (0 = remove)
+  netbudget allow APP BYTES        extra allowance for today
+"""
+import json
+import os
+import re
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+CONF = Path("/etc/xora/netbudget.json")        # {"budgets": {"firefox": 524288000}}
+STATE = Path("/var/lib/xora/netbudget-today.json")
+STATUS = Path("/run/xora/netbudget.json")
+TABLE = "xora_budget"
+CG = Path("/sys/fs/cgroup")
+APP_RE = re.compile(r"^app-(?:flatpak-)?(?P<id>.+?)(?:@[^.]*|-\d+)?\.(?:scope|service)$")
+
+
+def nft(script):
+    return subprocess.run(["nft", "-f", "-"], input=script, text=True, capture_output=True)
+
+
+def load(p, default):
+    try:
+        return json.loads(p.read_text())
+    except (OSError, ValueError):
+        return default
+
+
+def save(p, data, mode=0o644):
+    p.parent.mkdir(parents=True, exist_ok=True)
+    tmp = p.with_suffix(".tmp")
+    tmp.write_text(json.dumps(data, indent=1))
+    os.chmod(tmp, mode)
+    tmp.replace(p)
+
+
+def app_cgroups():
+    """{cgroup path relative to /sys/fs/cgroup: app id} for running desktop apps of all users."""
+    res = {}
+    for d in CG.glob("user.slice/user-*.slice/user@*.service/app.slice/*"):
+        m = APP_RE.match(d.name)
+        if m and d.is_dir():
+            res[str(d.relative_to(CG))] = m.group("id")
+    return res
+
+
+def short(appid):
+    """org.mozilla.firefox → firefox, org.kde.dolphin → dolphin: what people type."""
+    return appid.split(".")[-1].lower()
+
+
+class Daemon:
+    def __init__(self):
+        self.marks = {}      # app id → ct mark number
+        self.paths = set()   # cgroups that already have rules
+        self.blocked = set()
+        self.day = time.strftime("%F")
+        self.reset()
+        # restarted during the day: what each app used before still counts
+        today = load(STATE, {})
+        if today.get("day") == self.day:
+            today["base"] = dict(today.get("seen", {}))
+            save(STATE, today, 0o600)
+
+    def reset(self):
+        nft(f"table inet {TABLE}\ndelete table inet {TABLE}\n")
+        r = nft(f"""table inet {TABLE} {{
+  chain out {{ type filter hook output priority -5; policy accept; }}
+  chain inp {{ type filter hook input priority -5; policy accept; }}
+}}""")
+        if r.returncode:
+            sys.exit(f"nftables: {r.stderr}")
+        self.marks.clear()
+        self.paths.clear()
+        self.blocked.clear()
+
+    def mark(self, appid):
+        if appid not in self.marks:
+            n = 0x7800 + len(self.marks) + 1
+            self.marks[appid] = n
+            # counters are per mark; download counted on the app's connections
+            nft(f'add rule inet {TABLE} out ct mark {n} counter comment "up:{appid}"\n'
+                f'add rule inet {TABLE} inp ct mark {n} counter comment "down:{appid}"\n')
+        return self.marks[appid]
+
+    def track(self):
+        for path, appid in app_cgroups().items():
+            if path in self.paths:
+                continue
+            n = self.mark(appid)
+            level = len(path.split("/"))
+            r = nft(f'insert rule inet {TABLE} out socket cgroupv2 level {level} "{path}" ct mark set {n}\n')
+            if r.returncode == 0:
+                self.paths.add(path)
+
+    def usage(self):
+        out = subprocess.run(["nft", "-j", "list", "table", "inet", TABLE], capture_output=True, text=True).stdout
+        used = {}
+        try:
+            for item in json.loads(out)["nftables"]:
+                rule = item.get("rule")
+                if not rule or "comment" not in rule:
+                    continue
+                kind, appid = rule["comment"].split(":", 1)
+                if kind not in ("up", "down"):
+                    continue
+                b = next((e["counter"]["bytes"] for e in rule["expr"] if "counter" in e), 0)
+                used[appid] = used.get(appid, 0) + b
+        except (ValueError, KeyError):
+            pass
+        return used
+
+    def enforce(self, used):
+        conf = load(CONF, {}).get("budgets", {})
+        today = load(STATE, {})
+        if today.get("day") != self.day:
+            today = {"day": self.day, "base": {}, "extra": {}, "seen": {}}
+        today.setdefault("seen", {})
+        status = {}
+        for appid, n in self.marks.items():
+            key = next((k for k in conf if k.lower() in (appid.lower(), short(appid))), None)
+            total = used.get(appid, 0) + today["base"].get(appid, 0)
+            budget = conf.get(key) if key else None
+            limit = budget + today["extra"].get(key, 0) if budget else None
+            over = bool(limit) and total >= limit
+            if over and appid not in self.blocked:
+                nft(f'insert rule inet {TABLE} out ct mark {n} drop comment "block:{appid}"\n'
+                    f'insert rule inet {TABLE} inp ct mark {n} drop comment "block:{appid}"\n')
+                self.blocked.add(appid)
+            elif not over and appid in self.blocked:
+                self.unblock(appid)
+            today["seen"][appid] = total
+            status[appid] = {"name": short(appid), "used": total, "budget": budget, "limit": limit, "blocked": over}
+        save(STATUS, {"day": self.day, "apps": status, "updated": time.time()})
+        save(STATE, today, 0o600)
+
+    def unblock(self, appid):
+        out = subprocess.run(["nft", "-a", "list", "table", "inet", TABLE], capture_output=True, text=True).stdout
+        chain = None
+        for line in out.splitlines():
+            m = re.match(r"\s*chain (\w+) \{", line)
+            if m:
+                chain = m.group(1)
+            elif f'"block:{appid}"' in line and "# handle" in line and chain:
+                h = line.rsplit("# handle", 1)[1].strip()
+                subprocess.run(["nft", "delete", "rule", "inet", TABLE, chain, "handle", h], capture_output=True)
+        self.blocked.discard(appid)
+
+    def run(self):
+        while True:
+            if time.strftime("%F") != self.day:       # midnight: new day, fresh counters, nothing blocked
+                self.day = time.strftime("%F")
+                self.reset()
+            self.track()
+            self.enforce(self.usage())
+            time.sleep(5)
+
+
+def main(argv):
+    if not argv or argv[0] == "daemon":
+        return Daemon().run()
+    cmd = argv[0]
+    if cmd in ("set", "allow") and len(argv) == 3:
+        app, n = argv[1].lower(), int(argv[2])
+        if cmd == "set":
+            conf = load(CONF, {"budgets": {}})
+            if n > 0:
+                conf.setdefault("budgets", {})[app] = n
+            else:
+                conf.get("budgets", {}).pop(app, None)
+            save(CONF, conf)
+        else:
+            today = load(STATE, {})
+            if today.get("day") != time.strftime("%F"):
+                today = {"day": time.strftime("%F"), "base": {}, "extra": {}}
+            today["extra"][app] = today["extra"].get(app, 0) + n
+            save(STATE, today, 0o600)
+        return 0
+    print(__doc__, file=sys.stderr)
+    return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]) or 0)

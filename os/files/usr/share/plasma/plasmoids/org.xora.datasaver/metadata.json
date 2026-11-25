@@ -1,0 +1,15 @@
+{
+  "KPackageStructure": "Plasma/Applet",
+  "X-Plasma-API-Minimum-Version": "6.0",
+  "KPlugin": {
+    "Id": "org.xora.datasaver",
+    "Name": "XORA Data saver",
+    "Description": "Data used and metered mode; click to turn Data saver on or off",
+    "Icon": "smartphone",
+    "Category": "System Information",
+    "Authors": [{ "Name": "XORA OS" }],
+    "License": "GPL-3.0-or-later",
+    "Version": "0.1",
+    "FormFactors": ["desktop", "panel"]
+  }
+}

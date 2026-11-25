@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Spaces
+GenericName=XORA Spaces
+Comment=Your projects: open, close and check Spaces
+Exec=xora-term --hold -- xora space list
+Icon=view-grid
+Categories=Development;System;
+Keywords=space;project;xora;

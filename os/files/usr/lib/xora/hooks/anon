@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# XORA Anon mode (run as root): all traffic through Tor, with a kill switch.
+#   anon on      start Tor, wait until it's connected, then route everything through it
+#   anon off     remove the routing and stop Tor
+#   anon status  on | off
+# Kill switch: while on, anything that isn't going through Tor (or to this computer / your LAN) is
+# rejected, so if Tor stops, nothing leaks. IPv6 is blocked while on (Tor's transparent mode is IPv4).
+set -euo pipefail
+TABLE=xora_anon
+LAN="{ 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16 }"
+
+rules() {
+  local tor_uid; tor_uid="$(id -u toranon)"
+  cat <<NFT
+table inet $TABLE {
+  chain nat_out {
+    type nat hook output priority -100; policy accept;
+    meta skuid $tor_uid return
+    oifname "lo" return
+    ip daddr 127.0.0.0/8 return
+    ip daddr $LAN return
+    udp dport 53 redirect to :5353
+    meta nfproto ipv4 meta l4proto tcp redirect to :9040
+  }
+  chain filter_out {
+    type filter hook output priority 0; policy drop;
+    oifname "lo" accept
+    meta skuid $tor_uid accept
+    ct state established,related accept
+    ip daddr $LAN accept
+    reject
+  }
+}
+NFT
+}
+
+case "${1:-status}" in
+  on)
+    systemctl start xora-anon-tor.service
+    echo "Connecting to Tor…"
+    for _ in $(seq 1 90); do
+      if journalctl -u xora-anon-tor.service --since "-3min" -o cat | grep -q "Bootstrapped 100%"; then break; fi
+      sleep 1
+    done
+    journalctl -u xora-anon-tor.service --since "-3min" -o cat | grep -q "Bootstrapped 100%" \
+      || { echo "Tor didn't connect within 90 seconds; Anon mode not enabled (nothing changed)."; systemctl stop xora-anon-tor.service; exit 1; }
+    nft delete table inet $TABLE 2>/dev/null || true
+    rules | nft -f -
+    # resolver caches from before must not be reused
+    resolvectl flush-caches 2>/dev/null || true
+    echo "Anon mode is ON: all traffic goes through Tor. Kill switch active."
+    ;;
+  off)
+    nft delete table inet $TABLE 2>/dev/null || true
+    systemctl stop xora-anon-tor.service || true
+    resolvectl flush-caches 2>/dev/null || true
+    echo "Anon mode is OFF."
+    ;;
+  status)
+    if nft list table inet $TABLE >/dev/null 2>&1; then echo on; else echo off; fi
+    ;;
+  *) echo "usage: anon on|off|status" >&2; exit 2 ;;
+esac

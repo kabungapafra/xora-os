@@ -1,0 +1,6 @@
+[Basic Settings]
+Indexing-Enabled=true
+
+[General]
+# find files by name instantly, without reading every document's contents in the background
+only basic indexing=true

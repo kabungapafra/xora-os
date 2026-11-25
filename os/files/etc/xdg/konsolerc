@@ -1,0 +1,10 @@
+[Desktop Entry]
+DefaultProfile=XORA.profile
+
+[MainWindow]
+MenuBar=Enabled
+ToolBarsMovable=Disabled
+
+[TabBar]
+TabBarPosition=Top
+NewTabBehavior=PutNewTabAfterCurrentTab

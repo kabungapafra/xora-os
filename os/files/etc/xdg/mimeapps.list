@@ -1,0 +1,12 @@
+[Default Applications]
+application/x-ms-dos-executable=xora-run-windows.desktop
+application/x-msdownload=xora-run-windows.desktop
+application/x-msi=xora-run-windows.desktop
+application/vnd.microsoft.portable-executable=xora-run-windows.desktop
+application/vnd.android.package-archive=xora-install-apk.desktop
+application/vnd.debian.binary-package=xora-install.desktop
+application/x-deb=xora-install.desktop
+application/x-rpm=xora-install.desktop
+application/x-redhat-package-manager=xora-install.desktop
+application/vnd.appimage=xora-install.desktop
+application/x-iso9660-appimage=xora-install.desktop

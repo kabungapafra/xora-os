@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Install Android app
+Comment=Installs an .apk into XORA's Android (Waydroid)
+Icon=android-studio
+Exec=xora-term --hold -- xora install %f
+MimeType=application/vnd.android.package-archive;
+NoDisplay=true
+Categories=Utility;

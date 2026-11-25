@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# XORA's terminal launcher. Every XORA feature opens terminals through this, so the terminal app
+# can change in one place. Uses Ptyxis (the clean dark terminal with a header bar), Konsole if
+# Ptyxis isn't installed.
+#
+#   xora-term                          new terminal window
+#   xora-term --cwd DIR                new window in DIR
+#   xora-term --tab --cwd DIR          new tab in the open terminal window
+#   xora-term --hold -- CMD ARGS...    run CMD, keep the window open afterwards
+set -u
+hold=0; tab=0; cwd="${PWD:-}"   # default: the folder it was started in (Dolphin "Open Terminal Here")
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --hold) hold=1 ;;
+    --tab) tab=1 ;;
+    --cwd) cwd="${2:-}"; shift ;;
+    --) shift; break ;;
+    *) break ;;
+  esac
+  shift
+done
+
+cmd=("$@")
+if [ ${#cmd[@]} -gt 0 ] && [ "$hold" = 1 ]; then
+  cmd=(bash -c '"$@"; s=$?; printf "\n\033[2m[xora] finished (exit %s). Press Enter to close…\033[0m " "$s"; read -r _' xora-term "${cmd[@]}")
+fi
+
+if command -v ptyxis >/dev/null 2>&1; then
+  args=()
+  if [ "$tab" = 1 ]; then args+=(--tab); else args+=(--new-window); fi
+  [ -n "$cwd" ] && args+=(-d "$cwd")
+  if [ ${#cmd[@]} -gt 0 ]; then exec ptyxis "${args[@]}" -- "${cmd[@]}"; fi
+  exec ptyxis "${args[@]}"
+fi
+
+args=(--profile XORA)
+[ "$tab" = 1 ] && args+=(--new-tab)
+[ -n "$cwd" ] && args+=(--workdir "$cwd")
+if [ ${#cmd[@]} -gt 0 ]; then exec konsole "${args[@]}" -e "${cmd[@]}"; fi
+exec konsole "${args[@]}"

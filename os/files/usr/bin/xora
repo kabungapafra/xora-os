@@ -1,0 +1,2 @@
+#!/usr/bin/bash
+PYTHONPATH=/usr/lib/xora exec /usr/bin/python3 -P -m xora "$@"

@@ -1,0 +1,19 @@
+[Desktop Entry]
+Type=Application
+Name=XORA Center
+GenericName=Home, Devices and Timeline
+Comment=Your Spaces, your linked devices, and everything you can go back to
+Exec=xora center
+Icon=xora-logo
+Categories=Utility;
+Keywords=home;spaces;timeline;restore;undo;devices;fabric;pair;link;xora;
+StartupWMClass=org.xora.Center
+Actions=devices;timeline;
+
+[Desktop Action devices]
+Name=Add a device
+Exec=xora center pair
+
+[Desktop Action timeline]
+Name=Timeline
+Exec=xora center timeline

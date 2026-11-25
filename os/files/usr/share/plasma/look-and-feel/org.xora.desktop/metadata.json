@@ -1,0 +1,12 @@
+{
+  "KPackageStructure": "Plasma/LookAndFeel",
+  "KPlugin": {
+    "Id": "org.xora.desktop",
+    "Name": "XORA",
+    "Description": "XORA OS: navy, cyan and the glowing X",
+    "Authors": [{ "Name": "XORA OS" }],
+    "License": "GPL-3.0-or-later",
+    "Version": "0.1"
+  },
+  "X-Plasma-APIVersion": "2"
+}

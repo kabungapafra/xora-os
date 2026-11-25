@@ -1,0 +1,16 @@
+[Unit]
+Description=XORA per-app data budgets
+After=network.target nftables.service firewalld.service
+
+[Service]
+ExecStart=/usr/lib/xora/hooks/netbudget daemon
+Restart=on-failure
+RestartSec=10
+RuntimeDirectory=xora
+RuntimeDirectoryPreserve=yes
+StateDirectory=xora
+ProtectHome=yes
+Nice=5
+
+[Install]
+WantedBy=multi-user.target

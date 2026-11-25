@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Welcome to XORA
+Exec=xora center --setup --once
+Icon=xora-logo
+X-KDE-autostart-phase=2
+OnlyShowIn=KDE;

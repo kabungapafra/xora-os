@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# XORA VPN kill switch (root). While on, internet traffic may only leave through a VPN tunnel.
+#   vpn-killswitch on [SERVER_IP...]   allow only: VPN tunnels, the VPN servers (so it can reconnect),
+#                                      this computer, your LAN, DHCP
+#   vpn-killswitch off
+#   vpn-killswitch status
+# If the VPN drops, everything else is blocked instead of silently going out unprotected.
+set -euo pipefail
+TABLE=xora_vpn_ks
+MARK=/run/xora/vpn-killswitch
+LAN="{ 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16 }"
+
+case "${1:-status}" in
+  on)
+    shift
+    servers=""
+    for ip in "$@"; do
+      [[ $ip =~ ^[0-9.]+$ ]] && servers+="${servers:+, }$ip"
+    done
+    nft delete table inet $TABLE 2>/dev/null || true
+    nft -f - <<NFT
+table inet $TABLE {
+  chain out {
+    type filter hook output priority 10; policy drop;
+    oifname "lo" accept
+    oifname { "wg*", "tun*", "tap*", "ppp*", "ipsec*", "vpn*", "nordlynx", "proton*", "mullvad*" } accept
+    ip daddr $LAN accept
+    udp dport { 67, 68 } accept
+    ${servers:+ip daddr { $servers \} accept}
+    ip6 daddr fe80::/10 accept
+    reject
+  }
+}
+NFT
+    mkdir -p /run/xora && date +%s > $MARK
+    echo "VPN kill switch is ON: internet traffic only leaves through the VPN."
+    ;;
+  off)
+    nft delete table inet $TABLE 2>/dev/null || true
+    rm -f $MARK
+    echo "VPN kill switch is OFF."
+    ;;
+  status)
+    if nft list table inet $TABLE >/dev/null 2>&1; then echo on; else echo off; fi
+    ;;
+  *) echo "usage: vpn-killswitch on [SERVER_IP...] | off | status" >&2; exit 2 ;;
+esac

@@ -1,0 +1,13 @@
+[Unit]
+Description=XORA: take OS updates from the public XORA image
+ConditionPathExists=/run/ostree-booted
+After=local-fs.target
+Before=bootc-fetch-apply-updates.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/xora/hooks/image-origin
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

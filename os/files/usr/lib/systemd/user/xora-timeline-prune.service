@@ -1,0 +1,6 @@
+[Unit]
+Description=XORA Timeline: remove file snapshots older than 30 days
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/xora timeline prune --days 30 --yes

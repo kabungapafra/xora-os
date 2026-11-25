@@ -1,0 +1,73 @@
+#!/usr/bin/env python3
+"""Before an OS update (root, ExecStartPre of bootc-fetch-apply-updates.service):
+use a LAN update cache if one of *your linked devices* runs it, so the office downloads each update once.
+
+A cache is a XORA machine where someone ran `xora fabric update-cache on`; it announces itself as
+_xora-updates._tcp. Only caches whose address belongs to a device linked in some user's Fabric are
+trusted, so a stranger on the same Wi-Fi can't feed this machine fake updates. With no trusted cache
+around, the mirror setting is removed and updates come straight from the internet as usual.
+"""
+import json
+import subprocess
+from pathlib import Path
+
+CONF = Path("/etc/containers/registries.conf.d/50-xora-lan-cache.conf")
+
+
+def booted_registry():
+    try:
+        j = json.loads(subprocess.run(["bootc", "status", "--json"], capture_output=True, text=True, timeout=60).stdout)
+        ref = j["status"]["booted"]["image"]["image"]["image"]
+    except Exception:
+        return None
+    first = ref.split("/")[0]
+    return first if ("." in first or ":" in first) and first != "localhost" else None
+
+
+def linked_addresses():
+    addrs = set()
+    for f in Path("/var/home").glob("*/.config/xora/devices.yaml"):
+        for line in f.read_text(errors="ignore").splitlines():
+            line = line.strip()
+            if line.startswith("host:"):
+                addrs.add(line.split(":", 1)[1].strip().split("@")[-1])
+    return addrs
+
+
+def caches():
+    try:
+        out = subprocess.run(["avahi-browse", "-rtp", "_xora-updates._tcp"], capture_output=True, text=True, timeout=8).stdout
+    except Exception:
+        return []
+    res = []
+    for line in out.splitlines():
+        p = line.split(";")
+        if p[0] == "=" and len(p) > 8 and p[2] == "IPv4":
+            res.append((p[7], p[8]))
+    return res
+
+
+def main():
+    reg = booted_registry()
+    trusted = linked_addresses()
+    found = [(ip, port) for ip, port in caches() if ip in trusted]
+    if not reg or not found:
+        if CONF.exists():
+            CONF.unlink()
+        print("lan-updates: no trusted update cache on this network; downloading from the internet")
+        return
+    ip, port = found[0]
+    CONF.parent.mkdir(parents=True, exist_ok=True)
+    CONF.write_text(f"""# written by XORA before an update: {ip} is a linked device caching OS updates for this network
+[[registry]]
+prefix = "{reg}"
+location = "{reg}"
+[[registry.mirror]]
+location = "{ip}:{port}"
+insecure = true
+""")
+    print(f"lan-updates: using the update cache on {ip}:{port} (linked device)")
+
+
+if __name__ == "__main__":
+    main()

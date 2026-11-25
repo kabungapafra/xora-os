@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=XORA
+Description=XORA OS boot splash: the glowing X on navy
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/xora
+ScriptFile=/usr/share/plymouth/themes/xora/xora.script

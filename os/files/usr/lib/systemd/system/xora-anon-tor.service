@@ -1,0 +1,16 @@
+[Unit]
+Description=XORA Anon mode: Tor for all traffic
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=toranon
+Group=toranon
+StateDirectory=xora-anon
+StateDirectoryMode=0700
+ExecStart=/usr/bin/tor -f /usr/share/xora/anon-torrc
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+Restart=on-failure
