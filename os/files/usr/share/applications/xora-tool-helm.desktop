@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Helm
+Comment=Kubernetes package manager
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell helm "Kubernetes package manager"
+Icon=package-x-generic
+Categories=X-XORA-DevOps;
+Keywords=helm;devops;tool;

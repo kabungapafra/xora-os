@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Kali Toolset
+Comment=Install every Kali tool in a safe container
+Exec=xora-term --hold -- xora tools kali
+Icon=security-low
+Categories=X-XORA-Security;

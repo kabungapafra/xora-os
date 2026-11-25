@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Metasploit
+Comment=Exploitation framework (Kali toolset)
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell msfconsole "Exploitation framework (Kali toolset)"
+Icon=security-low
+Categories=X-XORA-Security;
+Keywords=msfconsole;security;tool;

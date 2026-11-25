@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=radare2
+Comment=Reverse engineering and debugging
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell r2 "Reverse engineering and debugging"
+Icon=applications-development
+Categories=X-XORA-Security;
+Keywords=radare2;security;tool;

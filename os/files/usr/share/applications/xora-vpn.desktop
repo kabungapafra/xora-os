@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=VPN
+Comment=Connect, add a VPN, kill switch
+Exec=xora-term --hold -- xora vpn
+Icon=network-vpn
+Categories=X-XORA-Privacy;

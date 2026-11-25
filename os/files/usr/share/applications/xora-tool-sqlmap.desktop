@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=sqlmap
+Comment=SQL injection testing (Kali toolset)
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell sqlmap "SQL injection testing (Kali toolset)"
+Icon=security-low
+Categories=X-XORA-Security;
+Keywords=sqlmap;security;tool;

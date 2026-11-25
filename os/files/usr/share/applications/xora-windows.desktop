@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Windows Apps
+Comment=Run .exe programs (or a full Windows VM)
+Exec=xora-term --hold -- xora apps windows
+Icon=preferences-desktop-display
+Categories=Utility;System;

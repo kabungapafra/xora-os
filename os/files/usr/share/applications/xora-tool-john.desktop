@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=John the Ripper
+Comment=Password cracker
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell john "Password cracker"
+Icon=dialog-password
+Categories=X-XORA-Security;
+Keywords=john;security;tool;

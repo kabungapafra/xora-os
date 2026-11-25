@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Internet Speed
+Comment=Speed, latency and DNS: what's slowing you down
+Exec=xora-term --hold -- xora speed
+Icon=network-wireless
+Categories=Utility;System;

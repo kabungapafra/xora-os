@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Nmap
+Comment=Scan networks for hosts, ports and services
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell nmap "Scan networks for hosts, ports and services"
+Icon=network-workgroup
+Categories=X-XORA-Security;
+Keywords=nmap;security;tool;

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Torsocks
+Comment=Run one program through Tor
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell torsocks "Run one program through Tor"
+Icon=security-high
+Categories=X-XORA-Privacy;
+Keywords=torsocks;privacy;tool;

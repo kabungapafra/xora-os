@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Nyx
+Comment=Watch your Tor connection
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell nyx "Watch your Tor connection"
+Icon=security-high
+Categories=X-XORA-Privacy;
+Keywords=nyx;privacy;tool;

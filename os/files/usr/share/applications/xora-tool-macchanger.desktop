@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=MAC Changer
+Comment=Change your network card's hardware address
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell macchanger "Change your network card's hardware address"
+Icon=network-wired
+Categories=X-XORA-Privacy;
+Keywords=macchanger;privacy;tool;

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Trivy
+Comment=Find vulnerabilities in images and code
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell trivy "Find vulnerabilities in images and code"
+Icon=security-medium
+Categories=X-XORA-DevOps;
+Keywords=trivy;devops;tool;

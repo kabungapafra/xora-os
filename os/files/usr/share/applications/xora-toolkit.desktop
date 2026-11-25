@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=All Tools
+Comment=Every security, privacy and DevOps tool in XORA
+Exec=xora-term --hold -- xora tools
+Icon=applications-utilities
+Categories=X-XORA-Security;

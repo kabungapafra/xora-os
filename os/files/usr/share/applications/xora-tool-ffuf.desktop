@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=ffuf
+Comment=Fast web fuzzer
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell ffuf "Fast web fuzzer"
+Icon=applications-internet
+Categories=X-XORA-Security;
+Keywords=ffuf;security;tool;

@@ -591,8 +591,14 @@ def _bus(*args):
              "org.kde.ActivityManager.Activities", *args], capture=True, timeout=5)
     if r.returncode != 0:
         return None
+    if not r.stdout.strip():
+        return True             # calls like SetActivityIcon return nothing: success
     import json
-    return json.loads(r.stdout)["data"][0]
+    try:
+        data = json.loads(r.stdout).get("data") or [True]
+    except ValueError:
+        return None
+    return data[0]
 
 
 def _activity(name):

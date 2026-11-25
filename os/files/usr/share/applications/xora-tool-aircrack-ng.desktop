@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Aircrack-ng
+Comment=Wi-Fi security auditing
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell aircrack-ng "Wi-Fi security auditing"
+Icon=network-wireless
+Categories=X-XORA-Security;
+Keywords=aircrack-ng;security;tool;

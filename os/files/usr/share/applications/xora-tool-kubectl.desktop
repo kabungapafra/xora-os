@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=kubectl
+Comment=Kubernetes command line
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell kubectl "Kubernetes command line"
+Icon=utilities-terminal
+Categories=X-XORA-DevOps;
+Keywords=kubectl;devops;tool;

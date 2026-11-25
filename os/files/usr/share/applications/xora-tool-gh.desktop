@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=GitHub CLI
+Comment=GitHub from the terminal
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell gh "GitHub from the terminal"
+Icon=vcs-normal
+Categories=X-XORA-DevOps;
+Keywords=gh;devops;tool;

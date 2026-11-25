@@ -7,7 +7,7 @@ IMAGE="${IMAGE:-localhost/xora-os:latest}"
 TYPE="${TYPE:-anaconda-iso}"      # anaconda-iso | qcow2 | raw
 CONFIG="${CONFIG:-os/iso.toml}"   # os/iso-vm-test.toml = unattended install for a test VM
 OUT="${OUT:-output}"
-mkdir -p "$OUT"
+mkdir -p "$OUT" output-cache/store output-cache/rpmmd   # cache: a retry resumes downloads instead of starting over
 
 # bootc-image-builder reads from root's container storage, so copy the image there
 # (again whenever the rootless build is newer than root's copy).
@@ -22,6 +22,7 @@ fi
 sudo podman run --rm --privileged --pull=newer \
   --security-opt label=type:unconfined_t \
   -v "./$OUT":/output \
+  -v ./output-cache/store:/store -v ./output-cache/rpmmd:/rpmmd \
   -v "./$CONFIG":/config.toml:ro \
   -v /var/lib/containers/storage:/var/lib/containers/storage \
   quay.io/centos-bootc/bootc-image-builder:latest \

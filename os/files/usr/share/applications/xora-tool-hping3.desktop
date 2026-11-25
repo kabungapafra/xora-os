@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=hping3
+Comment=Craft and send custom packets
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell hping3 "Craft and send custom packets"
+Icon=network-wired
+Categories=X-XORA-Security;
+Keywords=hping3;security;tool;

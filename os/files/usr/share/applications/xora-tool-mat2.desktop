@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Metadata Cleaner (mat2)
+Comment=Remove hidden metadata from photos and documents
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell mat2 "Remove hidden metadata from photos and documents"
+Icon=edit-clear
+Categories=X-XORA-Privacy;
+Keywords=mat2;privacy;tool;

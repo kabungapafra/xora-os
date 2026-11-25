@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Anon Mode (Tor)
+Comment=Send all traffic through Tor, with a kill switch
+Exec=xora-term --hold -- xora anon on
+Icon=security-high
+Categories=X-XORA-Privacy;

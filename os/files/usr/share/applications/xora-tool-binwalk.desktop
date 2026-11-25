@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Binwalk
+Comment=Analyse and extract firmware
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell binwalk "Analyse and extract firmware"
+Icon=application-x-executable
+Categories=X-XORA-Security;
+Keywords=binwalk;security;tool;

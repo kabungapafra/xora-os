@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=ClamAV
+Comment=Antivirus scanner
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell clamscan "Antivirus scanner"
+Icon=security-high
+Categories=X-XORA-Security;
+Keywords=clamscan;security;tool;

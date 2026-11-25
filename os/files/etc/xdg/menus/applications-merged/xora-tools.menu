@@ -1,0 +1,11 @@
+<!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN" "http://www.freedesktop.org/standards/menu-spec/menu-1.0.dtd">
+<!-- XORA: Security, Privacy and DevOps categories in the app grid and menu -->
+<Menu>
+  <Name>Applications</Name>
+  <Menu><Name>XORA Security</Name><Directory>xora-security.directory</Directory>
+    <Include><Category>X-XORA-Security</Category><Filename>org.wireshark.Wireshark.desktop</Filename></Include></Menu>
+  <Menu><Name>XORA Privacy</Name><Directory>xora-privacy.directory</Directory>
+    <Include><Category>X-XORA-Privacy</Category><Filename>org.keepassxc.KeePassXC.desktop</Filename></Include></Menu>
+  <Menu><Name>XORA DevOps</Name><Directory>xora-devops.directory</Directory>
+    <Include><Category>X-XORA-DevOps</Category></Include></Menu>
+</Menu>

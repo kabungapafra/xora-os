@@ -43,12 +43,6 @@ dock.lengthMode = "fit";
 dock.floating = true;
 dock.hiding = "dodgewindows";
 
-var launcher = dock.addWidget("org.kde.plasma.kickoff");
-launcher.currentConfigGroup = ["General"];
-launcher.writeConfig("icon", "/usr/share/pixmaps/xora-logo.svg");
-
-dock.addWidget("org.kde.plasma.marginsseparator");
-
 var tasks = dock.addWidget("org.kde.plasma.icontasks");
 tasks.currentConfigGroup = ["General"];
 tasks.writeConfig("launchers", [
@@ -59,3 +53,16 @@ tasks.writeConfig("launchers", [
     "applications:systemsettings.desktop"
 ].join(","));
 tasks.writeConfig("showOnlyCurrentDesktop", false);
+
+dock.addWidget("org.kde.plasma.marginsseparator");
+
+// "Show Applications" (like Ubuntu's grid button): every app and tool full-screen, with search and categories.
+// The Super key opens it too.
+var grid = dock.addWidget("org.kde.plasma.kickerdash");
+grid.currentConfigGroup = ["General"];
+grid.writeConfig("useCustomButtonImage", true);
+grid.writeConfig("customButtonImage", "view-app-grid-symbolic");
+grid.writeConfig("showRecentApps", false);
+grid.writeConfig("showRecentDocs", false);
+grid.currentConfigGroup = ["Shortcuts"];
+grid.writeConfig("global", "Meta+F1");

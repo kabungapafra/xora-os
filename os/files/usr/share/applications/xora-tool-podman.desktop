@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Podman
+Comment=Containers
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell podman "Containers"
+Icon=package-x-generic
+Categories=X-XORA-DevOps;
+Keywords=podman;devops;tool;

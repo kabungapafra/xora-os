@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Gobuster
+Comment=Find hidden web paths and subdomains
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell gobuster "Find hidden web paths and subdomains"
+Icon=applications-internet
+Categories=X-XORA-Security;
+Keywords=gobuster;security;tool;

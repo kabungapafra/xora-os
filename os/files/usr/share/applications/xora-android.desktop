@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Android Apps
+Comment=Set up Android apps
+Exec=xora-term --hold -- xora apps android
+Icon=smartphone
+Categories=Utility;System;

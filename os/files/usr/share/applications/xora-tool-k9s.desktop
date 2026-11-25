@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=k9s
+Comment=Manage Kubernetes clusters in the terminal
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell k9s "Manage Kubernetes clusters in the terminal"
+Icon=utilities-terminal
+Categories=X-XORA-DevOps;
+Keywords=k9s;devops;tool;

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Lynis
+Comment=Security audit of this computer
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell lynis "Security audit of this computer"
+Icon=security-high
+Categories=X-XORA-Security;
+Keywords=lynis;security;tool;

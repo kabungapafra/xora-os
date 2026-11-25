@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=tcpdump
+Comment=Capture network packets in the terminal
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell tcpdump "Capture network packets in the terminal"
+Icon=network-wired
+Categories=X-XORA-Security;
+Keywords=tcpdump;security;tool;

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=OpenTofu
+Comment=Infrastructure as code
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell tofu "Infrastructure as code"
+Icon=applications-development
+Categories=X-XORA-DevOps;
+Keywords=tofu;devops;tool;

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Firejail
+Comment=Run an app in a sandbox
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell firejail "Run an app in a sandbox"
+Icon=security-medium
+Categories=X-XORA-Privacy;
+Keywords=firejail;privacy;tool;

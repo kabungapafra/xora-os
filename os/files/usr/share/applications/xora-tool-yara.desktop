@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=YARA
+Comment=Match malware patterns
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell yara "Match malware patterns"
+Icon=security-medium
+Categories=X-XORA-Security;
+Keywords=yara;security;tool;

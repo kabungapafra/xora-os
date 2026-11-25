@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Privacy Check
+Comment=Who is using your camera, microphone and network
+Exec=xora-term --hold -- xora privacy
+Icon=security-medium
+Categories=X-XORA-Privacy;

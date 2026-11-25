@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=AWS CLI
+Comment=Amazon Web Services command line
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell aws "Amazon Web Services command line"
+Icon=folder-cloud
+Categories=X-XORA-DevOps;
+Keywords=aws;devops;tool;

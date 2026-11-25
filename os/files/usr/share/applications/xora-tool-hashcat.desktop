@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Hashcat
+Comment=GPU password recovery
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell hashcat "GPU password recovery"
+Icon=dialog-password
+Categories=X-XORA-Security;
+Keywords=hashcat;security;tool;

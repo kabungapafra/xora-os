@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Nikto
+Comment=Web server scanner (Kali toolset)
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell nikto "Web server scanner (Kali toolset)"
+Icon=security-low
+Categories=X-XORA-Security;
+Keywords=nikto;security;tool;

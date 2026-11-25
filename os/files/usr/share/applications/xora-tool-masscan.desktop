@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Masscan
+Comment=Very fast port scanner
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell masscan "Very fast port scanner"
+Icon=network-workgroup
+Categories=X-XORA-Security;
+Keywords=masscan;security;tool;

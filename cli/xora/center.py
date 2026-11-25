@@ -288,9 +288,22 @@ def main(argv):
     ap.add_argument("--path")
     ap.add_argument("--setup", action="store_true", help="first-boot setup")
     ap.add_argument("--once", action="store_true", help="with --setup: only if setup hasn't been done yet")
+    ap.add_argument("--notify", action="store_true",
+                    help="with --setup: don't open over the desktop; offer the setup in a notification instead")
     a = ap.parse_args(argv)
     if a.setup and a.once and (STATE / "welcomed").exists():
         return 0
+    if a.setup and a.notify:
+        # the desktop stays clean: a corner notification offers the setup, which opens only if clicked
+        if have("notify-send"):
+            r = subprocess.run(["notify-send", "--app-name=XORA", "--icon=xora-logo", "--wait", "--expire-time=0",
+                                "--action=setup=Set up XORA", "--action=later=Later",
+                                "Welcome to XORA",
+                                "Two minutes: link your other devices and make your first Space."],
+                               capture_output=True, text=True)
+            if r.stdout.strip() != "setup":
+                return 0
+        a.notify = False
     try:
         import gi
         gi.require_version("Gtk", "4.0")

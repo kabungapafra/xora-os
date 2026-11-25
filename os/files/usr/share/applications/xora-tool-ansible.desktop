@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Ansible
+Comment=Configure many machines at once
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell ansible "Configure many machines at once"
+Icon=applications-development
+Categories=X-XORA-DevOps;
+Keywords=ansible;devops;tool;

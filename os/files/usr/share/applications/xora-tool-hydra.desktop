@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Hydra
+Comment=Test logins against many services
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell hydra "Test logins against many services"
+Icon=dialog-password
+Categories=X-XORA-Security;
+Keywords=hydra;security;tool;
