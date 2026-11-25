@@ -57,7 +57,7 @@ tasks.writeConfig("showOnlyCurrentDesktop", false);
 dock.addWidget("org.kde.plasma.marginsseparator");
 
 // "Show Applications" (like Ubuntu's grid button): every app and tool full-screen, with search and categories.
-// The Super key opens it too.
+// Super+A opens it too (like Ubuntu); Super alone opens the Overview of windows (kwinrc).
 var grid = dock.addWidget("org.kde.plasma.kickerdash");
 grid.currentConfigGroup = ["General"];
 grid.writeConfig("useCustomButtonImage", true);
@@ -65,4 +65,4 @@ grid.writeConfig("customButtonImage", "view-app-grid-symbolic");
 grid.writeConfig("showRecentApps", false);
 grid.writeConfig("showRecentDocs", false);
 grid.currentConfigGroup = ["Shortcuts"];
-grid.writeConfig("global", "Meta+F1");
+grid.writeConfig("global", "Meta+A");

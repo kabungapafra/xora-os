@@ -1,0 +1,26 @@
+# XORA: the Super (Windows) key works like on Ubuntu.
+#   Super        Overview: every open window, workspaces along the top (drag a window onto one to move it),
+#                and a search box for apps, tools, files and settings
+#   Super + A    all apps and tools in a full-screen grid (also the grid button on the dock)
+# (the Super key itself is assigned in kglobalshortcutsrc: in Plasma 6 it's a normal shortcut)
+
+# every window ("card"): Super + scroll changes its transparency · Super + right-drag resizes it
+[MouseBindings]
+CommandAllKey=Meta
+CommandAllWheel=Change Opacity
+CommandAll3=Resize
+
+[Plugins]
+overviewEnabled=true
+
+[Desktops]
+Number=4
+Rows=1
+Id_1=xora-desktop-1
+Id_2=xora-desktop-2
+Id_3=xora-desktop-3
+Id_4=xora-desktop-4
+Name_1=Workspace 1
+Name_2=Workspace 2
+Name_3=Workspace 3
+Name_4=Workspace 4
