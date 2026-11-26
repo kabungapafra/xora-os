@@ -68,7 +68,10 @@ else
 fi
 
 rm -f "$out"
+# -boot_image any replay keeps the original EFI partition appended for USB boot (GPT partition 2),
+# which still names the old label: replace it with the fixed efiboot.img, or a USB stick won't boot.
 xorriso -indev "$in" -outdev "$out" -boot_image any replay \
+  -append_partition 2 0xef "$w/efiboot.img" \
   -volid "$new" "${branding[@]}" \
   -map "$w/efi.cfg" /EFI/BOOT/grub.cfg \
   -map "$w/bios.cfg" /boot/grub2/grub.cfg \
@@ -80,4 +83,12 @@ implantisomd5 --force "$out" >/dev/null
 
 got="$(xorriso -indev "$out" -pvd_info 2>/dev/null | sed -n 's/^Volume Id *: //p')"
 [ "$got" = "$new" ] || { echo "relabel failed (volume id is $got)" >&2; exit 1; }
+# check every place a booting PC reads the label: the disc's menus and the USB EFI partition
+p2="$(xorriso -indev "$out" -report_system_area plain 2>/dev/null | awk '/GPT start and size :   2/{print $7, $8}')"
+if [ -n "$p2" ]; then
+  set -- $p2
+  dd if="$out" of="$w/p2.img" bs=512 skip="$1" count="$2" status=none
+  mtype -i "$w/p2.img" ::/EFI/BOOT/grub.cfg | grep -q "'$new'" \
+    || { echo "relabel failed: the USB EFI partition still has the old label" >&2; exit 1; }
+fi
 echo "Built: $out"
