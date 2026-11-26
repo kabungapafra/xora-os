@@ -90,6 +90,20 @@ RUN rpm -e --nodeps plasma-welcome plasma-welcome-fedora plasma-lookandfeel-fedo
     && sed -i '/^\[Desktop Entry\]/a NoDisplay=true' /usr/share/applications/org.kde.konsole.desktop \
     && ! rpm -q plasma-welcome
 
+# ---- stealth: nothing announces this computer or calls home to Fedora.
+#      KDE Connect broadcasts the computer's name to the whole network every few seconds (Fabric replaces it);
+#      the connectivity check (plain HTTP to fedoraproject.org), the weekly "countme" ping and the Fedora NTP
+#      pool all told the network and Fedora which OS this is. Time now comes from authenticated NTS servers.
+RUN rpm -e --nodeps kde-connect kdeconnectd kde-connect-libs NetworkManager-config-connectivity-fedora \
+    && sed -i -E 's/^(pool|server) .*fedora.*$//' /etc/chrony.conf \
+    && printf '%s\n' '# XORA: authenticated time (NTS) from neutral servers' \
+         'server time.cloudflare.com iburst nts' 'server nts.netnod.se iburst nts' 'server ptbtime1.ptb.de iburst nts' >> /etc/chrony.conf \
+    && ! grep -qi fedora /etc/chrony.conf \
+    && systemctl mask rpm-ostree-countme.timer \
+    && sed -i 's/^#\?disable-publishing=.*/disable-publishing=yes/' /etc/avahi/avahi-daemon.conf \
+    && grep -q '^disable-publishing=yes' /etc/avahi/avahi-daemon.conf \
+    && ! rpm -q kdeconnectd
+
 # ---- XORA files: theme, wallpaper, boot splash, Konsole, zsh, services
 COPY files/ /
 
@@ -135,7 +149,8 @@ RUN set -eux; \
     sed -i 's|^SHELL=.*|SHELL=/usr/bin/zsh|' /etc/default/useradd; \
     #
     # system services
-    systemctl enable avahi-daemon.service sshd.service vnstat.service; \
+    # avahi runs with publishing off (stealth); sshd starts only when a Fabric device is linked
+    systemctl enable avahi-daemon.service vnstat.service; systemctl disable sshd.service || true; \
     # RapidBoot: don't hold up boot waiting for the network
     systemctl disable NetworkManager-wait-online.service || true; \
     # automatic OS updates: at night, skipped on metered connections (see drop-ins in /usr/lib/systemd)

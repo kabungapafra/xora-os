@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Podman Compose
+Comment=Run compose files with Podman
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell podman-compose "Run compose files with Podman"
+Icon=view-list-tree
+Categories=X-XORA-DevOps;
+Keywords=podman-compose;devops;tool;

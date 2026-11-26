@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Ncat
+Comment=Read and write data across network connections
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell ncat "Read and write data across network connections"
+Icon=utilities-terminal
+Categories=X-XORA-Security;
+Keywords=ncat;security;tool;

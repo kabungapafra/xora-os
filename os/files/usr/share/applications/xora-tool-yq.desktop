@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=yq
+Comment=Query and transform YAML
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell yq "Query and transform YAML"
+Icon=text-x-script
+Categories=X-XORA-DevOps;
+Keywords=yq;devops;tool;

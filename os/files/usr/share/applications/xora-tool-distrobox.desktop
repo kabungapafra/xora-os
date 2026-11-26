@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Distrobox
+Comment=Any Linux distribution in a container
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell distrobox "Any Linux distribution in a container"
+Icon=utilities-terminal
+Categories=X-XORA-DevOps;
+Keywords=distrobox;devops;tool;

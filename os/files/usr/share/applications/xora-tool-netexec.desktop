@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=NetExec
+Comment=Test Windows and Active Directory networks (Kali toolset)
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell netexec "Test Windows and Active Directory networks (Kali toolset)"
+Icon=network-workgroup
+Categories=X-XORA-Security;
+Keywords=netexec;security;tool;

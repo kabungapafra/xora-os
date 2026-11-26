@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Autopsy
+Comment=Digital forensics (Kali toolset)
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell autopsy "Digital forensics (Kali toolset)"
+Icon=drive-harddisk
+Categories=X-XORA-Security;
+Keywords=autopsy;security;tool;

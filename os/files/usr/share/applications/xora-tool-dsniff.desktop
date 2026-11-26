@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Dsniff
+Comment=Network auditing and sniffing tools
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell dsniff "Network auditing and sniffing tools"
+Icon=network-wireless
+Categories=X-XORA-Security;
+Keywords=dsniff;security;tool;

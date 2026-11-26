@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Ghidra
+Comment=Reverse engineering suite (Kali toolset)
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell ghidra "Reverse engineering suite (Kali toolset)"
+Icon=applications-development
+Categories=X-XORA-Security;
+Keywords=ghidra;security;tool;

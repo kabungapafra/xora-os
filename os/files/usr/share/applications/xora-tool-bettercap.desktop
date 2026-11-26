@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Bettercap
+Comment=Network attack and monitoring framework (Kali toolset)
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell bettercap "Network attack and monitoring framework (Kali toolset)"
+Icon=network-wireless
+Categories=X-XORA-Security;
+Keywords=bettercap;security;tool;

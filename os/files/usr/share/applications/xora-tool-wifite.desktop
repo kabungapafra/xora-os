@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Wifite
+Comment=Automated Wi-Fi auditing (Kali toolset)
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell wifite "Automated Wi-Fi auditing (Kali toolset)"
+Icon=network-wireless
+Categories=X-XORA-Security;
+Keywords=wifite;security;tool;

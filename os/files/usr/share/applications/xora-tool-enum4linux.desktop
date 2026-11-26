@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=enum4linux
+Comment=Enumerate Windows/Samba hosts (Kali toolset)
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell enum4linux "Enumerate Windows/Samba hosts (Kali toolset)"
+Icon=network-workgroup
+Categories=X-XORA-Security;
+Keywords=enum4linux;security;tool;

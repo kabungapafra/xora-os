@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Whois
+Comment=Who owns a domain or IP address
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell whois "Who owns a domain or IP address"
+Icon=dialog-information
+Categories=X-XORA-Security;
+Keywords=whois;security;tool;

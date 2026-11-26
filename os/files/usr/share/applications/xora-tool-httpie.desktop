@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=HTTPie
+Comment=Friendly HTTP client for APIs
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell http "Friendly HTTP client for APIs"
+Icon=internet-web-browser
+Categories=X-XORA-DevOps;
+Keywords=http;devops;tool;

@@ -5,6 +5,14 @@ printf '\033[1;36m%s\033[0m  %s\n\n' "$tool" "$*"
 if command -v "$tool" >/dev/null 2>&1; then
   { "$tool" --help 2>&1 || "$tool" -h 2>&1; } | head -40
   printf '\n\033[2mType "%s ..." to use it · "man %s" for the full manual · "xora tools" lists every tool\033[0m\n\n' "$tool" "$tool"
+elif command -v distrobox >/dev/null 2>&1 && distrobox list --no-color 2>/dev/null | grep -qw kali; then
+  # part of the Kali toolset, which is installed: run it from its container
+  if distrobox enter kali -- sh -c "command -v '$tool'" >/dev/null 2>&1; then
+    distrobox enter kali -- sh -c "'$tool' --help 2>&1 | head -40"
+    printf '\n\033[2mRun it with:  xora tools run %s ...   (or open a Kali shell: distrobox enter kali)\033[0m\n\n' "$tool"
+  else
+    printf '%s isn'"'"'t in your Kali container yet. Add it with:\n  distrobox enter kali -- sudo apt-get install -y %s\n\n' "$tool" "$tool"
+  fi
 else
   printf '%s is part of the full Kali toolset. Install it with:  xora tools kali\nThen run it with:            xora tools run %s\n\n' "$tool" "$tool"
 fi

@@ -1,14 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- XORA: nothing gets in unless XORA needs it. Replaces the base system's zone, which opened ports 1025-65535. -->
+<!-- XORA stealth: nothing gets in and nothing answers. Replaces the base system's zone, which opened ports 1025-65535. -->
 <zone target="DROP">
-  <short>XORA</short>
-  <description>Incoming connections are dropped, except: SSH for linked Fabric devices (key-only), mDNS so linked devices find each other, the one-time pairing port while XORA Center shows a pairing code, and the OS update cache when it's turned on. Replies to your own connections always work.</description>
-  <service name="ssh"/>
-  <service name="mdns"/>
+  <short>XORA (stealth)</short>
+  <description>Every unsolicited packet is silently dropped, including ping, so scans see no computer at all. Replies to your own connections always work. Fabric opens SSH and device discovery to the local network only while a device is linked, and pairing opens its port only while a code is on screen (see /usr/lib/xora/hooks/exposure).</description>
   <service name="dhcpv6-client"/>
-  <port protocol="tcp" port="47821"/>
-  <!-- OS update cache for linked devices (only listens while `xora fabric update-cache on`) -->
-  <port protocol="tcp" port="5000"/>
   <icmp-block-inversion/>
   <forward/>
 </zone>

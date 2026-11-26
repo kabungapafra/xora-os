@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=MTR
+Comment=Traceroute and ping in one live view
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell mtr "Traceroute and ping in one live view"
+Icon=network-wired
+Categories=X-XORA-Security;
+Keywords=mtr;security;tool;

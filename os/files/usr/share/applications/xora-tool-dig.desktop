@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Dig
+Comment=Look up DNS records
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell dig "Look up DNS records"
+Icon=network-server
+Categories=X-XORA-Security;
+Keywords=dig;security;tool;

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=jq
+Comment=Query and transform JSON
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell jq "Query and transform JSON"
+Icon=text-x-script
+Categories=X-XORA-DevOps;
+Keywords=jq;devops;tool;

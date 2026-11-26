@@ -18,7 +18,7 @@ TOOLKIT = [
     ("Privacy", [("xora anon", "all traffic through Tor with a kill switch"), ("torsocks", "one program through Tor"),
                  ("nyx", "watch Tor"), ("mat2", "strip metadata from files"), ("macchanger", "change the MAC address"),
                  ("firejail", "run an app in a sandbox"), ("usbguard", "allow or block USB devices"),
-                 ("keepassxc", "password manager")]),
+                 ("keepassxc", "password manager"), ("tor", "the Tor network daemon")]),
     ("Recon & network", [("nmap", "port and service scanner"), ("masscan", "very fast port scanner"),
                          ("wireshark", "packet analyser"), ("tcpdump", "packet capture"), ("hping3", "packet crafting"),
                          ("mtr", "traceroute and ping"), ("ncat", "network Swiss-army knife"), ("socat", "relay anything"),
@@ -34,9 +34,20 @@ TOOLKIT = [
     ("DevOps", [("podman", "containers"), ("buildah", "build images"), ("skopeo", "copy and inspect images"),
                 ("podman-compose", "compose files"), ("kubectl", "Kubernetes"), ("helm", "Kubernetes packages"),
                 ("k9s", "Kubernetes in the terminal"), ("tofu", "OpenTofu: infrastructure as code"),
-                ("ansible", "configuration management"), ("aws", "AWS CLI"), ("gh", "GitHub CLI"),
-                ("git-lfs", "large files in Git"), ("jq", "JSON on the command line"), ("yq", "YAML on the command line")]),
+                ("ansible", "configuration management"), ("ansible-playbook", "run Ansible playbooks"), ("aws", "AWS CLI"), ("gh", "GitHub CLI"),
+                ("git-lfs", "large files in Git"), ("jq", "JSON on the command line"), ("yq", "YAML on the command line"),
+                ("git", "version control"), ("distrobox", "any Linux distribution in a container")]),
 ]
+
+# In the app grid too; installed with `xora tools kali`, run with `xora tools run <tool>`
+KALI_TOOLS = [("msfconsole", "Metasploit exploitation framework"), ("burpsuite", "web application testing"),
+              ("sqlmap", "SQL injection testing"), ("nikto", "web server scanner"), ("wpscan", "WordPress scanner"),
+              ("searchsploit", "Exploit Database, offline"), ("responder", "LLMNR/NBT-NS poisoner"),
+              ("netexec", "Windows and Active Directory testing"), ("enum4linux", "Windows/Samba enumeration"),
+              ("theHarvester", "emails, names and subdomains"), ("bettercap", "network attacks and monitoring"),
+              ("wfuzz", "web fuzzer"), ("dirb", "hidden web content"), ("setoolkit", "social engineering tests"),
+              ("hashid", "identify hash types"), ("wifite", "automated Wi-Fi auditing"),
+              ("ghidra", "reverse engineering suite"), ("autopsy", "digital forensics")]
 
 
 def _kali_exists():
@@ -60,7 +71,12 @@ def cmd_tools(a):
             mark = green("✓") if have(exe) else dim("·")
             print(f"  {mark} {name:16} {dim(what)}")
         print()
-    if _kali_exists():
+    kali = _kali_exists()
+    print(bold(cyan("Kali toolset")) + dim("  (" + ("installed: xora tools run <tool>" if kali else "not installed yet: xora tools kali") + ")"))
+    for name, what in KALI_TOOLS:
+        print(f"  {green('✓') if kali else dim('·')} {name:16} {dim(what)}")
+    print(dim("  …and the other 600+ Kali tools (xora tools kali --full)\n"))
+    if kali:
         ok("Kali toolset installed: xora tools run <tool>   (e.g. msfconsole, sqlmap, nikto, burpsuite)")
     else:
         info("Everything else from Kali (Metasploit, Burp, sqlmap, nikto, …): xora tools kali")

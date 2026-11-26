@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Responder
+Comment=LLMNR/NBT-NS poisoner for network tests (Kali toolset)
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell responder "LLMNR/NBT-NS poisoner for network tests (Kali toolset)"
+Icon=network-wired
+Categories=X-XORA-Security;
+Keywords=responder;security;tool;

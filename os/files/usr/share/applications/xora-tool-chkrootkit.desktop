@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Chkrootkit
+Comment=Check this system for rootkits
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell chkrootkit "Check this system for rootkits"
+Icon=security-medium
+Categories=X-XORA-Security;
+Keywords=chkrootkit;security;tool;

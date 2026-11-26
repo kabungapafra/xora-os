@@ -40,7 +40,8 @@ jobs:
       - name: shell scripts and launcher files are valid
         run: |
           for f in build.sh build-iso.sh os/files/usr/bin/xora-term os/files/usr/lib/xora/hooks/anon \
-                   os/files/usr/lib/xora/hooks/vpn-killswitch os/files/usr/lib/xora/hooks/image-origin; do bash -n "$f"; done
+                   os/files/usr/lib/xora/hooks/vpn-killswitch os/files/usr/lib/xora/hooks/image-origin \
+                   os/files/usr/lib/xora/hooks/exposure os/files/usr/lib/xora/hooks/tool-shell; do bash -n "$f"; done
           python3 -m py_compile os/files/usr/lib/xora/hooks/netbudget os/files/usr/lib/xora/hooks/lan-updates
           node --check os/files/usr/share/plasma/look-and-feel/org.xora.desktop/contents/layouts/org.kde.plasma.desktop-layout.js
 

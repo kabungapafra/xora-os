@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Git
+Comment=Version control
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell git "Version control"
+Icon=folder-git
+Categories=X-XORA-DevOps;
+Keywords=git;devops;tool;

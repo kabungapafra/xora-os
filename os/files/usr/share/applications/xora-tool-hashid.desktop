@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=HashID
+Comment=Identify hash types (Kali toolset)
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell hashid "Identify hash types (Kali toolset)"
+Icon=dialog-password
+Categories=X-XORA-Security;
+Keywords=hashid;security;tool;

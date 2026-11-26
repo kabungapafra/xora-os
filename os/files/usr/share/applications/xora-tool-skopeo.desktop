@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Skopeo
+Comment=Copy and inspect container images
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell skopeo "Copy and inspect container images"
+Icon=edit-copy
+Categories=X-XORA-DevOps;
+Keywords=skopeo;devops;tool;

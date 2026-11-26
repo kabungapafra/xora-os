@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Git LFS
+Comment=Large files in Git
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell git-lfs "Large files in Git"
+Icon=folder-git
+Categories=X-XORA-DevOps;
+Keywords=git-lfs;devops;tool;

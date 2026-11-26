@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Social-Engineer Toolkit
+Comment=Social engineering tests (Kali toolset)
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell setoolkit "Social engineering tests (Kali toolset)"
+Icon=security-low
+Categories=X-XORA-Security;
+Keywords=setoolkit;security;tool;

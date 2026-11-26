@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=WPScan
+Comment=WordPress security scanner (Kali toolset)
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell wpscan "WordPress security scanner (Kali toolset)"
+Icon=security-low
+Categories=X-XORA-Security;
+Keywords=wpscan;security;tool;

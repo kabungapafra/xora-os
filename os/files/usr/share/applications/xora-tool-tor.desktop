@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Tor
+Comment=The Tor network daemon
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell tor "The Tor network daemon"
+Icon=security-high
+Categories=X-XORA-Privacy;
+Keywords=tor;privacy;tool;

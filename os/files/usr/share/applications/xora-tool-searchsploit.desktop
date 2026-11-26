@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=SearchSploit
+Comment=Search the Exploit Database offline (Kali toolset)
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell searchsploit "Search the Exploit Database offline (Kali toolset)"
+Icon=system-search
+Categories=X-XORA-Security;
+Keywords=searchsploit;security;tool;

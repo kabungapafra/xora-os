@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Socat
+Comment=Relay data between sockets, files and pipes
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell socat "Relay data between sockets, files and pipes"
+Icon=network-transmit-receive
+Categories=X-XORA-Security;
+Keywords=socat;security;tool;

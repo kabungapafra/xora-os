@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Buildah
+Comment=Build container images
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell buildah "Build container images"
+Icon=package-x-generic
+Categories=X-XORA-DevOps;
+Keywords=buildah;devops;tool;

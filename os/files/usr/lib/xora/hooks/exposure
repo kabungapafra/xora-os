@@ -1,0 +1,108 @@
+#!/bin/bash
+# XORA stealth: by default this computer answers nothing on the network and announces nothing.
+# Things that need to be reachable are opened only while they're in use, and only to the local network:
+#
+#   pair-open     pairing code on screen: port 47821 + mDNS for 5 minutes (closes itself), announce "XORA here"
+#   pair-close    pairing finished or cancelled
+#   seek          looking for an inviting device: receive mDNS answers for 1 minute
+#   fabric-on     a device is linked: SSH (keys only) and mDNS from the local network, announce for linked devices
+#   fabric-off    no linked devices left: back to stealth
+#   cache-on|cache-off   the OS update cache for linked devices (port 5000, local network)
+#   status        what is reachable right now
+set -euo pipefail
+
+STATE=/var/lib/xora/exposure
+AVAHI_CONF=/etc/avahi/avahi-daemon.conf
+SERVICE_SRC=/usr/share/xora/avahi/xora.service
+SERVICE_DST=/etc/avahi/services/xora.service
+LAN4=(10.0.0.0/8 172.16.0.0/12 192.168.0.0/16 169.254.0.0/16)
+LAN6=(fe80::/10 fc00::/7)
+[ "${1:-status}" = status ] || mkdir -p "$STATE"
+
+fw() { firewall-cmd -q "$@" 2>/dev/null || true; }
+
+# allow a TCP port from local-network addresses only (internet addresses still get no answer)
+lan_port() {   # add|remove port [--permanent|--timeout=N]
+  local op="$1" port="$2" extra="${3:-}" src fam
+  for src in "${LAN4[@]}" "${LAN6[@]}"; do
+    case "$src" in *:*) fam=ipv6 ;; *) fam=ipv4 ;; esac
+    # shellcheck disable=SC2086
+    fw --"$op"-rich-rule="rule family=$fam source address=$src port port=$port protocol=tcp accept" $extra
+  done
+}
+
+publishing() {   # on|off: announce this computer on the local network (mDNS) or not
+  local target cur
+  if [ "$1" = on ]; then install -m 644 "$SERVICE_SRC" "$SERVICE_DST"; target=no
+  else rm -f "$SERVICE_DST"; target=yes; fi
+  cur="$(sed -n 's/^disable-publishing=//p' "$AVAHI_CONF")"
+  [ "$cur" = "$target" ] && return 0
+  if grep -q '^#\?disable-publishing=' "$AVAHI_CONF"; then
+    sed -i "s/^#\?disable-publishing=.*/disable-publishing=$target/" "$AVAHI_CONF"
+  else
+    sed -i "s/^\[server\]/[server]\ndisable-publishing=$target/" "$AVAHI_CONF"
+  fi
+  systemctl try-restart avahi-daemon.service || true
+}
+
+fabric_on() { [ -e "$STATE/fabric" ]; }
+
+case "${1:-status}" in
+  pair-open)
+    lan_port add 47821 --timeout=310
+    fw --add-service=mdns --timeout=310
+    publishing on
+    touch "$STATE/pairing"
+    ;;
+  pair-close)
+    lan_port remove 47821
+    fabric_on || fw --remove-service=mdns
+    rm -f "$STATE/pairing"
+    fabric_on || publishing off
+    ;;
+  seek)
+    fw --add-service=mdns --timeout=60
+    ;;
+  fabric-on)
+    for p in --permanent ""; do
+      # shellcheck disable=SC2086
+      lan_port add 22 $p
+      # shellcheck disable=SC2086
+      fw --add-service=mdns $p
+    done
+    publishing on
+    systemctl enable --now sshd.service
+    touch "$STATE/fabric"
+    ;;
+  fabric-off)
+    for p in --permanent ""; do
+      # shellcheck disable=SC2086
+      lan_port remove 22 $p
+      # shellcheck disable=SC2086
+      fw --remove-service=mdns $p
+    done
+    rm -f "$STATE/fabric"
+    [ -e "$STATE/pairing" ] || publishing off
+    systemctl disable --now sshd.service || true
+    ;;
+  cache-on)
+    lan_port add 5000 --permanent; lan_port add 5000
+    touch "$STATE/cache"
+    ;;
+  cache-off)
+    lan_port remove 5000 --permanent; lan_port remove 5000
+    rm -f "$STATE/cache"
+    ;;
+  status)
+    open=()
+    fabric_on && open+=("ssh (linked devices, local network)")
+    [ -e "$STATE/pairing" ] && open+=("pairing")
+    [ -e "$STATE/cache" ] && open+=("update cache")
+    if [ ${#open[@]} -eq 0 ]; then
+      echo "stealth: nothing on this computer answers or announces itself"
+    else
+      printf 'reachable from the local network only: %s\n' "$(IFS=,; echo "${open[*]}" | sed 's/,/, /g')"
+    fi
+    ;;
+  *) echo "usage: $0 pair-open|pair-close|seek|fabric-on|fabric-off|cache-on|cache-off|status" >&2; exit 2 ;;
+esac

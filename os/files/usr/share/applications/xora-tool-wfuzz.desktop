@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Wfuzz
+Comment=Web application fuzzer (Kali toolset)
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell wfuzz "Web application fuzzer (Kali toolset)"
+Icon=internet-web-browser
+Categories=X-XORA-Security;
+Keywords=wfuzz;security;tool;

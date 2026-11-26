@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=DIRB
+Comment=Find hidden web content (Kali toolset)
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell dirb "Find hidden web content (Kali toolset)"
+Icon=folder-remote
+Categories=X-XORA-Security;
+Keywords=dirb;security;tool;

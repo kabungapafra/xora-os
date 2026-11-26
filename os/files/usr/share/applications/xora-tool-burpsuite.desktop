@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Burp Suite
+Comment=Web application security testing (Kali toolset)
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell burpsuite "Web application security testing (Kali toolset)"
+Icon=security-low
+Categories=X-XORA-Security;
+Keywords=burpsuite;security;tool;

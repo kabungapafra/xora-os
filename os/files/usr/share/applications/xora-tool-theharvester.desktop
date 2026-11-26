@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=theHarvester
+Comment=Gather emails, names and subdomains (Kali toolset)
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell theHarvester "Gather emails, names and subdomains (Kali toolset)"
+Icon=system-search
+Categories=X-XORA-Security;
+Keywords=theHarvester;security;tool;

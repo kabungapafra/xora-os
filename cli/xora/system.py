@@ -90,6 +90,9 @@ def cmd_privacy(a):
     geo = out(["busctl", "--system", "--list", "--no-pager"]) if have("busctl") else ""
     gc = "geoclue" in geo and out(["pgrep", "-a", "geoclue"])
     print(f"  {'Location':12} " + (yellow("geoclue is active") if gc else green("nobody")))
+    vis = out(["/usr/lib/xora/hooks/exposure", "status"]) if os.path.exists("/usr/lib/xora/hooks/exposure") else ""
+    if vis:
+        print(f"  {'Visibility':12} " + (green(vis) if vis.startswith("stealth") else yellow(vis)))
     print(bold("\nNetwork connections"))
     net = sorted(_net_users().items(), key=lambda kv: -kv[1][0])
     for name, (n, hosts) in net[:12]:

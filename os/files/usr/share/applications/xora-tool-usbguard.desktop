@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=USBGuard
+Comment=Allow or block USB devices
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell usbguard "Allow or block USB devices"
+Icon=drive-removable-media-usb
+Categories=X-XORA-Privacy;
+Keywords=usbguard;privacy;tool;

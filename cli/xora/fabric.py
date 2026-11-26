@@ -25,6 +25,30 @@ QUEUE = STATE / "fabric-queue.json"
 SSH_OPTS = ["-o", "BatchMode=yes", "-o", "ConnectTimeout=5", "-o", "ServerAliveInterval=15"]
 
 
+EXPOSURE = "/usr/lib/xora/hooks/exposure"
+
+
+def expose(action):
+    """Open or close what other devices need (SSH, pairing, discovery) via XORA's stealth helper.
+    XORA answers nothing on the network by default; this asks for the admin password when needed."""
+    if not Path(EXPOSURE).exists():
+        return True                     # not on XORA (development machine): nothing to do
+    import sys
+    if os.geteuid() == 0:
+        argv = [EXPOSURE, action]
+    elif sys.stdin.isatty() and have("sudo"):
+        argv = ["sudo", EXPOSURE, action]
+    else:
+        argv = ["pkexec", EXPOSURE, action]
+    try:
+        r = subprocess.run(argv, capture_output=True, text=True, timeout=120)
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+    if r.returncode != 0:
+        warn(f"couldn't change network visibility ({action}); linked devices may not reach this one")
+    return r.returncode == 0
+
+
 def _places():
     from .places import sync
     try:
@@ -114,6 +138,8 @@ def cmd_revoke(a):
     _save(devs)
     _places()
     ok(f"Removed {a.name} from Fabric.")
+    if not devs and expose("fabric-off"):
+        info("No linked devices left: this computer is invisible on the network again (SSH off).")
     pub = Path.home() / ".ssh/id_ed25519.pub"
     if pub.exists() and confirm(f"Also remove this computer's key from {d['host']} so it can't log in any more?", True):
         key = pub.read_text().split()[1]
@@ -309,6 +335,7 @@ def add_device(name, peer, can):
                   "mem_mb": peer.get("mem_mb"), "can": list(can), "paired": time.strftime("%Y-%m-%d")}
     _save(devs)
     _places()
+    expose("fabric-on")                 # the linked device reaches this one over SSH (local network, keys only)
 
 
 def set_caps(name, can):
@@ -367,6 +394,7 @@ class Invite:
 
         self._srv = http.server.HTTPServer(("0.0.0.0", PAIR_PORT), H)
         threading.Thread(target=self._srv.serve_forever, daemon=True).start()
+        expose("pair-open")             # port 47821 for 5 minutes (closes itself), local network only
 
     @property
     def code(self):
@@ -391,6 +419,9 @@ class Invite:
         return name
 
     def close(self):
+        if not getattr(self, "_closed_net", False):
+            self._closed_net = True
+            expose("pair-close")
         self.closed = True
         try:
             self._srv.shutdown()
@@ -440,6 +471,8 @@ def discover(timeout=6):
     """XORA devices announcing themselves on this network: [{name, ip, paired_as}]."""
     if not have("avahi-browse"):
         return []
+    if not (Path("/var/lib/xora/exposure") / "fabric").exists():
+        expose("seek")                  # let discovery answers in for a minute
     r = run(["avahi-browse", "-rtp", "_xora._tcp"], capture=True, timeout=timeout)
     me = os.uname().nodename
     by_ip = {d["host"].split("@")[-1]: n for n, d in _devices().items()}
@@ -667,6 +700,7 @@ def cmd_update_cache(a):
         return
     if action == "off":
         run(["systemctl", "--user", "disable", "--now", unit, "xora-update-announce.service"], capture=True)
+        expose("cache-off")
         ok("update cache stopped (its copy is kept in the podman volume xora-update-cache)")
         return
     reg = a.registry or _booted_registry()
@@ -707,5 +741,6 @@ WantedBy=xora-update-cache.service
     if r.returncode != 0:
         die(f"couldn't start the cache: {r.stderr.strip()[-200:]}")
     run(["systemctl", "--user", "enable", "--now", "xora-update-announce.service"], capture=True)
+    expose("cache-on")
     ok(f"caching {reg} on port {CACHE_PORT}. Linked XORA devices on this network now update through this one.")
     info("It keeps running while you're logged in. Stop it with: xora fabric update-cache off")

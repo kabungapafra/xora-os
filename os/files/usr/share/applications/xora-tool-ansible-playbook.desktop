@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Ansible Playbook
+Comment=Run Ansible playbooks
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell ansible-playbook "Run Ansible playbooks"
+Icon=system-run
+Categories=X-XORA-DevOps;
+Keywords=ansible-playbook;devops;tool;
