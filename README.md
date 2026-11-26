@@ -80,9 +80,15 @@ prototype/              the earlier browser mock-up of the desktop
 TYPE=qcow2 ./build-iso.sh          # → a VM disk image instead
 ```
 
-Write the ISO to a USB stick (`sudo dd if=output/bootiso/install.iso of=/dev/sdX bs=4M status=progress`) and boot from it, or open it in a VM (GNOME Boxes or virt-manager).
+Write the ISO to a USB stick (`sudo dd if=output/xora-os-0.1-x86_64.iso of=/dev/sdX bs=4M status=progress`, or with Fedora Media Writer / Ventoy / balenaEtcher) and boot from it, or open it in a VM (GNOME Boxes, virt-manager, VirtualBox with EFI on).
 
-To update an installed XORA machine: push the image to a registry (`podman push localhost/xora-os ghcr.io/<you>/xora-os`), then on the machine run `sudo bootc switch ghcr.io/<you>/xora-os:latest` once. After that, `sudo bootc upgrade` pulls each new version, and the previous version stays available as a rollback.
+### How a machine installed from the ISO gets updates
+
+1. Change the code and `git push` to GitHub.
+2. GitHub Actions builds the new image (x86_64 and ARM64), signs it and publishes it as `ghcr.io/<owner>/xora-os:latest` (about 30–40 minutes).
+3. Every installed XORA machine checks that image at night (2 am, never on metered data), downloads only the layers that changed, and switches to it on the next restart. The previous version stays on disk for rollback.
+
+There's nothing to set up: `build.sh` writes the repository's GitHub image into the OS as its update source, and on first boot the installed machine switches to it (`xora-image-origin.service`). To update right away instead of waiting for the night: `sudo bootc upgrade && systemctl reboot`. To see where updates come from: `sudo bootc status`. For a private registry, build with `XORA_IMAGE=registry.example.com/xora-os:latest ./build.sh`.
 
 ## Use `xora` today, before installing the OS
 

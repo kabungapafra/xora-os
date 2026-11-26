@@ -32,7 +32,8 @@ jobs:
             quay.io/centos-bootc/bootc-image-builder:latest \
             --type anaconda-iso --rootfs btrfs --use-librepo=True "$img"
           sudo chown -R "$(id -u):$(id -g)" output
-          mv output/bootiso/install.iso "xora-os-${{ inputs.tag }}-x86_64.iso"
+          sudo apt-get install -y -qq xorriso mtools isomd5sum
+          ./iso-relabel.sh output/bootiso/install.iso "xora-os-${{ inputs.tag }}-x86_64.iso"
           sha256sum xora-os-*.iso | tee SHA256SUMS
       - uses: actions/upload-artifact@v4
         with:

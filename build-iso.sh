@@ -11,15 +11,16 @@ mkdir -p "$OUT" output-cache/store output-cache/rpmmd   # cache: a retry resumes
 
 # bootc-image-builder reads from root's container storage, so copy the image there
 # (again whenever the rootless build is newer than root's copy).
+SUDO="${SUDO:-sudo}"
 MINE="$(podman image inspect --format '{{.Id}}' "$IMAGE")"
-ROOTS="$(sudo podman image inspect --format '{{.Id}}' "$IMAGE" 2>/dev/null || true)"
+ROOTS="$($SUDO podman image inspect --format '{{.Id}}' "$IMAGE" 2>/dev/null || true)"
 if [ "$MINE" != "$ROOTS" ]; then
   echo "Copying $IMAGE into root's container storage…"
-  podman save "$IMAGE" | sudo podman load
+  podman save "$IMAGE" | $SUDO podman load
 fi
 
 # no interactive terminal flags: works from scripts and from prompts without a terminal
-sudo podman run --rm --privileged --pull=newer \
+$SUDO podman run --rm --privileged --pull=newer \
   --security-opt label=type:unconfined_t \
   -v "./$OUT":/output \
   -v ./output-cache/store:/store -v ./output-cache/rpmmd:/rpmmd \
@@ -29,6 +30,17 @@ sudo podman run --rm --privileged --pull=newer \
   --type "$TYPE" --rootfs btrfs --use-librepo=True \
   "$IMAGE"
 
-sudo chown -R "$(id -u):$(id -g)" "$OUT"
+$SUDO chown -R "$(id -u):$(id -g)" "$OUT"
 echo
 find "$OUT" -name '*.iso' -o -name '*.qcow2' -o -name '*.raw' | sed 's/^/Built: /'
+
+# give the ISO XORA's own disc label and menu titles (the builder names it after the base system)
+if [ "$TYPE" = anaconda-iso ] && [ -f "$OUT/bootiso/install.iso" ]; then
+  name="$OUT/xora-os-${XORA_VERSION:-0.1}-$(uname -m).iso"
+  if ./iso-relabel.sh "$OUT/bootiso/install.iso" "$name"; then
+    rm -f "$OUT/bootiso/install.iso"
+    (cd "$OUT" && sha256sum "$(basename "$name")" > "$(basename "$name").sha256")
+  else
+    echo "(relabel skipped: install xorriso, mtools and isomd5sum; the ISO still works with the base system's label)"
+  fi
+fi
