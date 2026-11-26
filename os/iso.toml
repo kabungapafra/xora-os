@@ -1,18 +1,22 @@
-# Installer settings for bootc-image-builder.
-# The installer asks for language, disk and user. Uncomment to pre-fill a user instead.
+# Installer settings for bootc-image-builder (the public ISO).
+# The installer asks for language, time zone, disk and user: nothing is erased until you choose a disk
+# in "Installation Destination" and press Begin Installation.
+# Uncomment to pre-fill a user instead.
 # [[customizations.user]]
 # name = "pafra"
 # groups = ["wheel"]
 
 [customizations.installer.kickstart]
 contents = """
-# XORA OS installer
-zerombr
-clearpart --all --initlabel
-autopart --type=btrfs --noswap
-firstboot --enable
+# XORA OS installer: boot straight into the desktop after installing
 xconfig --startxonboot
 """
 
+# Installer modules that run. The builder turns most off for image-based systems; the language
+# screen sets the time zone from the language and crashes if the Timezone module isn't running.
 [customizations.installer.modules]
-enable = ["org.fedoraproject.Anaconda.Modules.Users", "org.fedoraproject.Anaconda.Modules.Localization"]
+enable = [
+  "org.fedoraproject.Anaconda.Modules.Localization",
+  "org.fedoraproject.Anaconda.Modules.Timezone",
+  "org.fedoraproject.Anaconda.Modules.Users",
+]
