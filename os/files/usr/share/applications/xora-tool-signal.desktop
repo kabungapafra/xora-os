@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Signal
+Comment=End-to-end encrypted messenger (installs on first use)
+Exec=xora-term -- xora tools open signal
+Icon=internet-chat
+Categories=X-XORA-Privacy;
+Keywords=signal;privacy;tool;

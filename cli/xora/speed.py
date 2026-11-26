@@ -125,9 +125,11 @@ def cmd_speed(a):
         notes.append("Anon mode is on: Tor routes through 3 relays, so expect it to be slower. That's the price of anonymity.")
     if mbps is not None and mbps < 2:
         notes.append("Under 2 Mbit/s: big downloads will crawl. Data saver (`xora data --metered on`) keeps updates from competing.")
-    for n in notes:
-        print(yellow("[!] ") + n)
     if not a.no_download and net_ms is not None and mbps is None:
         notes.append("The download test got no data from any test server: the connection is up but very slow or filtered.")
+    if net_ms is None:
+        notes.append("No connection to the internet (1.1.1.1 didn't answer). Check Wi-Fi/cable, or a VPN or Anon kill switch.")
+    for n in notes:
+        print(yellow("[!] ") + n)
     if not notes and net_ms is not None:
         ok("Nothing is slowing the connection down on this side.")

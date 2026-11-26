@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=httpx
+Comment=Probe which web servers are alive (installs on first use)
+Exec=xora-term -- xora tools open httpx
+Icon=network-transmit-receive
+Categories=X-XORA-Security;
+Keywords=httpx;security;tool;

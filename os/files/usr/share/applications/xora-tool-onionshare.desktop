@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=OnionShare
+Comment=Share files, websites and chat anonymously over Tor
+Exec=onionshare
+Icon=folder-publicshare
+Categories=X-XORA-Privacy;Network;
+Keywords=onionshare;tor;share;privacy;

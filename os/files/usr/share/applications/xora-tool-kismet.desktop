@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Kismet
+Comment=Wi-Fi, Bluetooth and radio monitoring
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell kismet "Wi-Fi, Bluetooth and radio monitoring"
+Icon=network-wireless
+Categories=X-XORA-Security;
+Keywords=kismet;security;tool;

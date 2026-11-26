@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=SecLists
+Comment=Wordlists for passwords, paths and fuzzing (about 1 GB) (installs on first use)
+Exec=xora-term -- xora tools open seclists
+Icon=text-x-generic
+Categories=X-XORA-Security;
+Keywords=seclists;security;tool;

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=OWASP ZAP
+Comment=Web application security scanner (installs on first use)
+Exec=xora-term -- xora tools open zap
+Icon=security-low
+Categories=X-XORA-Security;
+Keywords=zap;security;tool;

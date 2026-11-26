@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=dnsx
+Comment=Fast DNS toolkit
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell dnsx "Fast DNS toolkit"
+Icon=network-server
+Categories=X-XORA-Security;
+Keywords=dnsx;security;tool;

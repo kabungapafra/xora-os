@@ -9,6 +9,7 @@ modified, so an app can't break XORA, and removing one leaves nothing behind.
 Windows apps that Wine can't run (Office 365, Adobe, some engineering software): xora apps windows-vm.
 """
 import re
+import shlex
 import shutil
 import stat
 from pathlib import Path
@@ -66,7 +67,7 @@ def cmd_install(a):
             before = set(out(["distrobox", "enter", "ubuntu", "--", "sh", "-c", "ls /usr/share/applications"], timeout=300).split())
             info(f"installing {f.name} in the Ubuntu container…")
             r = run(["distrobox", "enter", "ubuntu", "--", "sh", "-c",
-                     f"sudo apt-get update -qq && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y '{f.resolve()}'"])
+                     f"sudo apt-get update -qq && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y {shlex.quote(str(f.resolve()))}"])
             if r.returncode:
                 die("the .deb didn't install (see the messages above)")
             added = _export_new("ubuntu", before)

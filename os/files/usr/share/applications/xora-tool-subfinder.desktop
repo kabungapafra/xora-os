@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Subfinder
+Comment=Find subdomains
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell subfinder "Find subdomains"
+Icon=system-search
+Categories=X-XORA-Security;
+Keywords=subfinder;security;tool;

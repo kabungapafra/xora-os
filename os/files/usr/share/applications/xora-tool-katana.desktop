@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Katana
+Comment=Web crawler for recon (installs on first use)
+Exec=xora-term -- xora tools open katana
+Icon=system-search
+Categories=X-XORA-Security;
+Keywords=katana;security;tool;

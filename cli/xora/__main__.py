@@ -18,7 +18,7 @@
     xora where FILE                                          device, Space, copies, versions and Git of a file
     xora install FILE|NAME                                   install any app (.exe .apk .deb .rpm .AppImage, app store)
     xora apps [android|windows|windows-vm|ubuntu|…]          apps from everywhere
-    xora tools [kali [--full] | run CMD]                     security and DevOps toolkits; full Kali in a container
+    xora tools [kali [--full] | run CMD | add NAME]          security and DevOps toolkits; full Kali in a container
     xora data [--metered on|off] [--updates night|now|off]   expensive internet: metered mode, night updates
     xora resilience [watch|checkpoint|onbattery]             power cuts and UPS
     xora boot                                                what slows startup
@@ -196,7 +196,7 @@ def build():
     x.add_argument("target")
     x.set_defaults(fn=install.cmd_install)
     x = sub.add_parser("tools", help="security and DevOps toolkits; the full Kali toolset in a container")
-    x.add_argument("action", nargs="?", choices=["kali", "run"])
+    x.add_argument("action", nargs="?", choices=["kali", "run", "add", "open"])
     x.add_argument("--full", action="store_true", help="with kali: the full desktop toolset (kali-linux-default)")
     x.add_argument("cmd", nargs=argparse.REMAINDER)
     x.set_defaults(fn=tools.cmd_tools)

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Volatility
+Comment=Memory forensics (installs on first use)
+Exec=xora-term -- xora tools open volatility
+Icon=media-flash
+Categories=X-XORA-Security;
+Keywords=volatility;security;tool;

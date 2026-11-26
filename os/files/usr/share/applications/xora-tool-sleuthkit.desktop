@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Sleuth Kit
+Comment=Disk image forensics (fls, mmls, icat, …)
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell fls "Disk image forensics (fls, mmls, icat, …)"
+Icon=drive-harddisk
+Categories=X-XORA-Security;
+Keywords=fls;security;tool;

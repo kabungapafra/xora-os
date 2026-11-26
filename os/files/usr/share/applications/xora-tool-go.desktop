@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Go
+Comment=The Go toolchain
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell go "The Go toolchain"
+Icon=text-x-go
+Categories=X-XORA-DevOps;
+Keywords=go;devops;tool;

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=kind
+Comment=Local Kubernetes clusters in containers
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell kind "Local Kubernetes clusters in containers"
+Icon=network-workgroup
+Categories=X-XORA-DevOps;
+Keywords=kind;devops;tool;

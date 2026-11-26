@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Docker (Podman)
+Comment=docker command, run by Podman (no daemon, rootless)
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell docker "docker command, run by Podman (no daemon, rootless)"
+Icon=package-x-generic
+Categories=X-XORA-DevOps;
+Keywords=docker;devops;tool;

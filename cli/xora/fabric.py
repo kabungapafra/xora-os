@@ -28,20 +28,33 @@ SSH_OPTS = ["-o", "BatchMode=yes", "-o", "ConnectTimeout=5", "-o", "ServerAliveI
 EXPOSURE = "/usr/lib/xora/hooks/exposure"
 
 
+PAIRING = "/usr/lib/xora/hooks/pairing-window"
+SHORT = ("pair-open", "pair-close", "seek")     # self-closing, local network only: no password for the user at the computer
+_last_seek = 0.0
+
+
 def expose(action):
     """Open or close what other devices need (SSH, pairing, discovery) via XORA's stealth helper.
-    XORA answers nothing on the network by default; this asks for the admin password when needed."""
+    XORA answers nothing on the network by default. Linking a device (SSH) asks for the admin password;
+    a pairing code or a device search opens a port for a few minutes without asking."""
+    global _last_seek
     if not Path(EXPOSURE).exists():
         return True                     # not on XORA (development machine): nothing to do
+    if action == "seek":
+        if time.time() - _last_seek < 50:   # still open from the last search
+            return True
+        _last_seek = time.time()
     import sys
+    short = action in SHORT and Path(PAIRING).exists()
+    hook = PAIRING if short else EXPOSURE
     if os.geteuid() == 0:
-        argv = [EXPOSURE, action]
-    elif sys.stdin.isatty() and have("sudo"):
-        argv = ["sudo", EXPOSURE, action]
+        argv = [hook, action]
+    elif not short and sys.stdin.isatty() and have("sudo"):
+        argv = ["sudo", hook, action]
     else:
-        argv = ["pkexec", EXPOSURE, action]
+        argv = ["pkexec", hook, action]
     try:
-        r = subprocess.run(argv, capture_output=True, text=True, timeout=120)
+        r = subprocess.run(argv, capture_output=not (argv[0] == "sudo"), text=True, timeout=120)
     except (OSError, subprocess.TimeoutExpired):
         return False
     if r.returncode != 0:

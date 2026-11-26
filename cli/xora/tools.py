@@ -3,13 +3,18 @@
     xora tools                    what's built in, by category (✓ installed)
     xora tools kali [--full]      the complete Kali toolset (Metasploit, Burp, sqlmap, nikto, …) in a container
     xora tools run CMD ARGS...    run a Kali tool, e.g. xora tools run msfconsole
+    xora tools add NAME           tools that aren't part of the base system: zap, signal, vscodium, httpx,
+                                  volatility, seclists (installed for you only; nothing in the OS changes)
 
 The base system stays small and stable; the big, fast-changing offensive toolset lives in its own
 container (Distrobox), shares your home folder and network, and can be deleted without touching XORA.
 """
+import os
 import shlex
+import subprocess
+from pathlib import Path
 
-from .util import bold, cyan, die, dim, green, have, info, ok, out, run, warn
+from .util import bold, cyan, die, dim, err, green, have, info, ok, out, run, warn
 
 KALI = "kali"
 KALI_IMAGE = "docker.io/kalilinux/kali-rolling:latest"
@@ -50,6 +55,106 @@ KALI_TOOLS = [("msfconsole", "Metasploit exploitation framework"), ("burpsuite",
               ("ghidra", "reverse engineering suite"), ("autopsy", "digital forensics")]
 
 
+# Not packaged for the base system: installed per user on first use, from each project's official source.
+#   kind: flatpak (Flathub app id) · go (module, binary goes to ~/.local/bin) · venv (pip package, command) · git (repo, folder)
+ADDONS = {
+    "zap": ("flatpak", "org.zaproxy.ZAP", "OWASP ZAP: web application security scanner (free Burp alternative)"),
+    "signal": ("flatpak", "org.signal.Signal", "Signal: end-to-end encrypted messenger"),
+    "vscodium": ("flatpak", "com.vscodium.codium", "VSCodium: VS Code without Microsoft's telemetry"),
+    "httpx": ("go", "github.com/projectdiscovery/httpx/cmd/httpx@latest", "probe which web servers are alive"),
+    "katana": ("go", "github.com/projectdiscovery/katana/cmd/katana@latest", "web crawler for recon"),
+    "volatility": ("venv", ("volatility3", "vol"), "memory forensics (Volatility 3)"),
+    "seclists": ("git", ("https://github.com/danielmiessler/SecLists.git", "wordlists/SecLists"),
+                 "SecLists wordlists, rockyou included (about 1 GB)"),
+}
+LOCAL_BIN = Path.home() / ".local/bin"
+
+
+def _addon_installed(name):
+    kind, what, _ = ADDONS[name]
+    if kind == "flatpak":
+        return have("flatpak") and subprocess.run(["flatpak", "info", what], capture_output=True).returncode == 0
+    if kind == "go":
+        return (LOCAL_BIN / name).exists()
+    if kind == "venv":
+        return (LOCAL_BIN / what[1]).exists()
+    return (Path.home() / what[1]).is_dir()
+
+
+def _hide_grid_stub(name):
+    """Once the real app is installed it has its own icon: hide XORA's 'install me' icon for this user."""
+    d = Path.home() / ".local/share/applications"
+    d.mkdir(parents=True, exist_ok=True)
+    (d / f"xora-tool-{name}.desktop").write_text("[Desktop Entry]\nType=Application\nName=" + name + "\nHidden=true\n")
+
+
+def add_tool(name):
+    if name not in ADDONS:
+        die(f"unknown tool '{name}'. Available: {', '.join(ADDONS)}")
+    kind, what, desc = ADDONS[name]
+    if _addon_installed(name):
+        ok(f"{name} is already installed")
+        return 0
+    info(f"installing {bold(name)}: {desc}")
+    LOCAL_BIN.mkdir(parents=True, exist_ok=True)
+    if kind == "flatpak":
+        if not have("flatpak"):
+            die("Flatpak isn't installed")
+        run(["flatpak", "remote-add", "--user", "--if-not-exists", "flathub",
+             "https://dl.flathub.org/repo/flathub.flatpakrepo"], capture=True)
+        r = run(["flatpak", "install", "--user", "-y", "flathub", what])
+        if r.returncode == 0:
+            _hide_grid_stub(name)
+    elif kind == "go":
+        if not have("go"):
+            die("Go isn't installed")
+        env = dict(os.environ, GOBIN=str(LOCAL_BIN))
+        r = subprocess.run(["go", "install", what], env=env)
+    elif kind == "venv":
+        pkg, cmd = what
+        venv = Path.home() / ".local/share/xora/venvs" / pkg
+        r = run(["python3", "-m", "venv", str(venv)])
+        if r.returncode == 0:
+            r = run([str(venv / "bin/pip"), "install", "-q", "--upgrade", pkg])
+        if r.returncode == 0:
+            link = LOCAL_BIN / cmd
+            link.unlink(missing_ok=True)
+            link.symlink_to(venv / "bin" / cmd)
+    else:
+        url, folder = what
+        dest = Path.home() / folder
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        r = run(["git", "clone", "--depth", "1", url, str(dest)])
+    if r.returncode:
+        err(f"{name} didn't install (see the messages above); run `xora tools add {name}` again to retry")
+        return r.returncode
+    ok(f"{name} installed" + (f" in ~/{what[1]}" if kind == "git" else ""))
+    return 0
+
+
+def open_tool(name):
+    """From the app grid: install on first use, then start it."""
+    if name not in ADDONS:
+        die(f"unknown tool '{name}'")
+    if not _addon_installed(name) and add_tool(name):
+        input("\nPress Enter to close")
+        return 1
+    kind, what, desc = ADDONS[name]
+    if kind == "flatpak":
+        subprocess.Popen(["flatpak", "run", what], start_new_session=True,
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return 0
+    if kind == "git":
+        os.chdir(Path.home() / what[1])
+        print(bold(cyan(name)) + "  " + desc + "\n")
+        subprocess.run(["ls", "--color=auto", "-p"])
+        print(dim(f"\nYou're in ~/{what[1]}. Passwords/Leaked-Databases has rockyou.txt.tar.gz\n"))
+        shell = os.environ.get("SHELL", "/bin/zsh")
+        os.execvp(shell, [shell, "-i"])
+    exe = name if kind == "go" else what[1]
+    os.execvp("/usr/lib/xora/hooks/tool-shell", ["tool-shell", exe, desc])
+
+
 def _kali_exists():
     return have("distrobox") and KALI in out(["distrobox", "list", "--no-color"], timeout=30)
 
@@ -58,6 +163,12 @@ def cmd_tools(a):
     action = a.action
     if action == "kali":
         return _kali(a.full)
+    if action == "add":
+        if not a.cmd:
+            die("usage: xora tools add NAME   (" + ", ".join(ADDONS) + ")")
+        return max(add_tool(n) for n in a.cmd)
+    if action == "open":
+        return open_tool(a.cmd[0]) if a.cmd else die("usage: xora tools open NAME")
     if action == "run":
         if not a.cmd:
             die("usage: xora tools run CMD ARGS...   (e.g. xora tools run msfconsole)")
@@ -71,6 +182,10 @@ def cmd_tools(a):
             mark = green("✓") if have(exe) else dim("·")
             print(f"  {mark} {name:16} {dim(what)}")
         print()
+    print(bold(cyan("Install on first use")) + dim("  (xora tools add NAME, or click it in the app grid)"))
+    for name, (kind, what, desc) in ADDONS.items():
+        print(f"  {green('✓') if _addon_installed(name) else dim('·')} {name:16} {dim(desc)}")
+    print()
     kali = _kali_exists()
     print(bold(cyan("Kali toolset")) + dim("  (" + ("installed: xora tools run <tool>" if kali else "not installed yet: xora tools kali") + ")"))
     for name, what in KALI_TOOLS:

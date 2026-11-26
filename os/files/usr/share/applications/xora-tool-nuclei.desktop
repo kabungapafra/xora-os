@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Nuclei
+Comment=Template-based vulnerability scanner
+Exec=xora-term -- /usr/lib/xora/hooks/tool-shell nuclei "Template-based vulnerability scanner"
+Icon=security-medium
+Categories=X-XORA-Security;
+Keywords=nuclei;security;tool;

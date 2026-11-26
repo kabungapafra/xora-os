@@ -1,0 +1,8 @@
+#!/bin/bash
+# The short, self-closing openings that pairing needs, allowed without a password for the person at
+# the computer: the pairing port for 5 minutes and discovery answers for 1 minute, local network only.
+# Anything longer-lived (SSH for linked devices, the update cache) goes through `exposure` and asks.
+case "${1:-}" in
+  pair-open|pair-close|seek) exec /usr/lib/xora/hooks/exposure "$1" ;;
+  *) echo "usage: $0 pair-open|pair-close|seek" >&2; exit 2 ;;
+esac

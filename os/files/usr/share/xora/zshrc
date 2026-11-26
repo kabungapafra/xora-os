@@ -5,6 +5,10 @@ setopt autocd interactivecomments magicequalsubst nonomatch notify numericglobso
 WORDCHARS=${WORDCHARS//\/}
 PROMPT_EOL_MARK=""
 
+# your own programs (pip, go, xora tools add, AppImages) come first, each folder only once
+typeset -U path
+path=("$HOME/.local/bin" "$HOME/bin" "$HOME/go/bin" $path)
+
 # ---- keys
 bindkey -e
 bindkey ' ' magic-space

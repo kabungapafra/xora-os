@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=VSCodium
+Comment=Code editor (VS Code without telemetry) (installs on first use)
+Exec=xora-term -- xora tools open vscodium
+Icon=accessories-text-editor
+Categories=X-XORA-DevOps;
+Keywords=vscodium;devops;tool;

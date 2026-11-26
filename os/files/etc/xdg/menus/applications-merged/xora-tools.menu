@@ -5,7 +5,9 @@
   <Menu><Name>XORA Security</Name><Directory>xora-security.directory</Directory>
     <Include><Category>X-XORA-Security</Category><Filename>org.wireshark.Wireshark.desktop</Filename></Include></Menu>
   <Menu><Name>XORA Privacy</Name><Directory>xora-privacy.directory</Directory>
-    <Include><Category>X-XORA-Privacy</Category><Filename>org.keepassxc.KeePassXC.desktop</Filename></Include></Menu>
+    <Include><Category>X-XORA-Privacy</Category><Filename>org.keepassxc.KeePassXC.desktop</Filename>
+      <Filename>org.torproject.torbrowser-launcher.desktop</Filename>
+      <Filename>zuluCrypt.desktop</Filename><Filename>zuluMount.desktop</Filename></Include></Menu>
   <Menu><Name>XORA DevOps</Name><Directory>xora-devops.directory</Directory>
     <Include><Category>X-XORA-DevOps</Category></Include></Menu>
 </Menu>
