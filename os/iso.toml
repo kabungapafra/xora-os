@@ -14,8 +14,9 @@ contents = """
 lang en_US.UTF-8
 keyboard us
 timezone UTC --utc
-# no root password, like Ubuntu: the user you create gets administrator rights (sudo)
-rootpw --lock
+# (no "rootpw --lock": with it the installer let you start without creating any user, which leaves a
+#  system nobody can log into. Without it, Begin Installation stays disabled until you create a user;
+#  "administrator" is ticked by default and root stays disabled, like Ubuntu.)
 # boot straight into the desktop after installing
 xconfig --startxonboot
 """
