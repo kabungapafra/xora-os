@@ -15,7 +15,7 @@ fi
 echo "Installed machines will take updates from: $XORA_IMAGE"
 # two images from one build: base (what the installer USB carries: a fast install) and full = base + the
 # toolkit (what installed machines run and update to). The second build reuses every base layer.
-for target in base full; do
+for target in ${TARGETS:-base full}; do
   tag="$IMAGE"; [ "$target" = base ] && tag="${IMAGE%:*}:base"
   podman build \
     --build-arg FEDORA_VERSION="$FEDORA_VERSION" \

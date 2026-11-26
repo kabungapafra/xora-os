@@ -1,0 +1,53 @@
+/* XORA installer: a clean look like the Ubuntu installer (Ubuntu Sans, rounded controls, one accent colour) */
+@define-color xora_accent #0ea5e9;
+@define-color xora_accent_dark #0284c7;
+
+* {
+    font-family: "Ubuntu Sans", "IBM Plex Sans", "Cantarell", sans-serif;
+}
+
+/* headings */
+.title, .heading, headerbar label {
+    font-weight: 600;
+}
+
+/* rounded buttons and fields, like Ubuntu */
+button, entry, combobox button, spinbutton {
+    border-radius: 6px;
+}
+button {
+    padding: 6px 16px;
+}
+
+/* the main action (Begin Installation, Done, Continue) in XORA blue */
+button.suggested-action,
+button.suggested-action:focus {
+    background-image: none;
+    background-color: @xora_accent;
+    border-color: @xora_accent_dark;
+    color: #ffffff;
+    box-shadow: none;
+}
+button.suggested-action:hover {
+    background-color: @xora_accent_dark;
+}
+button.suggested-action:disabled {
+    background-color: alpha(@xora_accent, 0.35);
+    color: alpha(#ffffff, 0.8);
+}
+
+/* selections and progress in the same blue */
+*:selected, row:selected {
+    background-color: @xora_accent;
+    color: #ffffff;
+}
+progressbar progress, progressbar trough progress {
+    background-image: none;
+    background-color: @xora_accent;
+    border-color: @xora_accent_dark;
+    border-radius: 4px;
+}
+progressbar trough {
+    border-radius: 4px;
+    min-height: 8px;
+}

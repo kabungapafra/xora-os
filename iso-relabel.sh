@@ -57,6 +57,17 @@ if command -v unsquashfs >/dev/null && command -v mksquashfs >/dev/null && [ -d 
   done
   $SUDO cp os/installer-branding/anaconda_header.png "$P/anaconda_header.png"
   $SUDO sed -i "s/@define-color fedora #[0-9a-fA-F]*;/@define-color fedora #0b1020;/" "$P"/*.css
+  # Ubuntu-like look: Ubuntu Sans font and XORA's stylesheet, appended to the installer's own
+  if [ -f os/installer-branding/xora.css ]; then
+    for css in "$P"/fedora.css "$P"/*/fedora-*.css; do
+      [ -f "$css" ] && cat os/installer-branding/xora.css | $SUDO tee -a "$css" >/dev/null
+    done
+  fi
+  if ls os/files/usr/share/fonts/xora/UbuntuSans*.ttf >/dev/null 2>&1; then
+    $SUDO mkdir -p "$w/root/usr/share/fonts/xora"
+    $SUDO cp os/files/usr/share/fonts/xora/UbuntuSans*.ttf "$w/root/usr/share/fonts/xora/"
+    $SUDO chroot "$w/root" fc-cache -f /usr/share/fonts/xora >/dev/null 2>&1 || true
+  fi
   $SUDO sed -i "s/^version = .*/version = $ver/" "$w/root/.buildstamp"
   grep -q "^version = $ver$" "$w/root/.buildstamp"
   $SUDO mksquashfs "$w/root" "$w/install.new.img" -comp zstd -b 131072 -noappend -quiet >/dev/null
