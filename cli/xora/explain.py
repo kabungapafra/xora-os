@@ -212,6 +212,25 @@ PIP_NAMES = {"yaml": "pyyaml", "cv2": "opencv-python", "PIL": "pillow", "sklearn
              "bs4": "beautifulsoup4", "dotenv": "python-dotenv", "jwt": "pyjwt", "psycopg2": "psycopg2-binary"}
 
 
+def _close_command(name):
+    """The installed command that `name` is most likely a typo of (gti → git, lear → clear), if any."""
+    import difflib
+    if len(name) < 2:
+        return None
+    names = set()
+    for d in os.environ.get("PATH", "").split(":"):
+        try:
+            names.update(os.listdir(d))
+        except OSError:
+            pass
+    # swapped letters (gti → git, sl → ls) are the most common typo: same letters, same length
+    swapped = sorted(n for n in names if len(n) == len(name) and sorted(n) == sorted(name) and n != name)
+    if swapped:
+        return min(swapped, key=lambda n: sum(a != b for a, b in zip(n, name)))
+    hits = difflib.get_close_matches(name, names, n=1, cutoff=0.8)
+    return hits[0] if hits and hits[0] != name else None
+
+
 def _pkg_install(cmd):
     osr = Path("/etc/os-release").read_text() if Path("/etc/os-release").exists() else ""
     if Path("/run/ostree-booted").exists():
@@ -269,6 +288,12 @@ def explain_output(text, cmd):
     m = re.search(r"(?:command not found|not found): ?(\S+)|(\S+): command not found", t)
     if m:
         name = (m.group(1) or m.group(2)).strip(":")
+        close = _close_command(name)
+        if close:
+            # a typo: fix the command, don't suggest installing a program called "lear"
+            line = os.environ.get("XORA_CMDLINE", name)
+            fixed = close + line[len(name):] if line.startswith(name) else close
+            return f"There's no program called {bold(name)}. Did you mean {bold(close)}?", fixed
         fix, note = _pkg_install(name)
         return f"The program {bold(name)} isn't installed." + (f" {note}" if note else ""), fix
     m = re.search(r"address already in use|EADDRINUSE|port is already allocated", t, re.I)

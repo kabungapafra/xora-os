@@ -64,4 +64,8 @@ grid.writeConfig("useCustomButtonImage", true);
 grid.writeConfig("customButtonImage", "view-app-grid-symbolic");
 grid.writeConfig("showRecentApps", false);
 grid.writeConfig("showRecentDocs", false);
+// favourites at the top of the grid: XORA's own apps, not KDE's defaults (Konsole is replaced by Ptyxis)
+grid.writeConfig("favoritesPortedToKAstats", false);
+grid.writeConfig("favorites", ["org.xora.Center.desktop", "org.gnome.Ptyxis.desktop", "org.kde.dolphin.desktop",
+                               "org.mozilla.firefox.desktop", "org.kde.discover.desktop", "systemsettings.desktop"].join(","));
 grid.globalShortcut = "Meta+A";

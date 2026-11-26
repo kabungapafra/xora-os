@@ -129,7 +129,7 @@ zle -N accept-line _xora_accept_line
 command_not_found_handler() {
   print -P "%F{red}zsh: command not found: $1%f" >&2
   if (( $+commands[xora] )); then
-    xora explain -- sh -c "echo '$1: command not found' >&2; exit 127" 2>/dev/null | grep 'xora explain'
+    XORA_CMDLINE="$*" xora explain -- sh -c "echo '$1: command not found' >&2; exit 127" 2>/dev/null | grep 'xora explain'
   fi
   return 127
 }
