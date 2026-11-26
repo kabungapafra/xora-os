@@ -3,7 +3,7 @@
 # Needs root (sudo) because it builds disk images.
 set -euo pipefail
 cd "$(dirname "$(readlink -f "$0")")"
-IMAGE="${IMAGE:-localhost/xora-os:latest}"
+IMAGE="${IMAGE:-localhost/xora-os:base}"   # the installer carries the base image; the toolkit downloads after installing
 TYPE="${TYPE:-anaconda-iso}"      # anaconda-iso | qcow2 | raw
 CONFIG="${CONFIG:-os/iso.toml}"   # os/iso-vm-test.toml = unattended install for a test VM
 OUT="${OUT:-output}"

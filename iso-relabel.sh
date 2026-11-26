@@ -67,12 +67,30 @@ else
   echo "(installer artwork skipped: install squashfs-tools)"
 fi
 
+# the system the installer copies (/container, an OCI image): gzip -> zstd. About the same size, but zstd
+# unpacks several times faster, which is most of the "Deployment starting" time on older computers.
+recompress=()
+if [ "${XORA_ZSTD:-1}" = 1 ]; then
+  if command -v skopeo >/dev/null; then SKOPEO=(skopeo)
+  else SKOPEO=($SUDO podman run --rm --security-opt label=disable -v "$w:/w" "${SKOPEO_IMAGE:-localhost/xora-os:base}" skopeo); fi
+  xorriso -osirrox on -indev "$in" -extract /container "$w/container" >/dev/null 2>&1
+  chmod -R u+w "$w/container"
+  if find "$w/container/blobs/sha256" -type f -size -1M -exec grep -l 'tar+gzip' {} + 2>/dev/null | grep -q .; then
+    echo "installer image: gzip -> zstd"
+    src=/w/container dst=/w/container-zstd; command -v skopeo >/dev/null && { src="$w/container"; dst="$w/container-zstd"; }
+    "${SKOPEO[@]}" copy --quiet --dest-compress-format zstd "oci:$src" "oci:$dst"
+    $SUDO chown -R "$(id -u):$(id -g)" "$w/container-zstd" 2>/dev/null || true
+    recompress=(-rm_r /container -- -map "$w/container-zstd" /container)
+  fi
+  rm -rf "$w/container"
+fi
+
 rm -f "$out"
 # -boot_image any replay keeps the original EFI partition appended for USB boot (GPT partition 2),
 # which still names the old label: replace it with the fixed efiboot.img, or a USB stick won't boot.
 xorriso -indev "$in" -outdev "$out" -boot_image any replay \
   -append_partition 2 0xef "$w/efiboot.img" \
-  -volid "$new" "${branding[@]}" \
+  -volid "$new" "${branding[@]}" "${recompress[@]}" \
   -map "$w/efi.cfg" /EFI/BOOT/grub.cfg \
   -map "$w/bios.cfg" /boot/grub2/grub.cfg \
   -map "$w/efiboot.img" /images/efiboot.img \

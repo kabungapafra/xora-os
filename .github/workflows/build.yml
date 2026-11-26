@@ -67,17 +67,21 @@ jobs:
         run: |
           owner="${GITHUB_REPOSITORY_OWNER,,}"
           echo "image=ghcr.io/${owner}/xora-os" >> "$GITHUB_OUTPUT"
-      - name: build
+      - name: build (base = what the installer carries, full = base + toolkit)
         run: |
-          podman build \
-            --build-arg XORA_IMAGE="${{ steps.names.outputs.image }}:latest" \
-            --build-arg XORA_VERSION="0.1.${{ github.run_number }}" \
-            -f os/Containerfile --build-context cli=cli \
-            -t "${{ steps.names.outputs.image }}:${{ github.sha }}-${{ matrix.arch }}" os/
+          for target in base full; do
+            tag="${{ steps.names.outputs.image }}:${{ github.sha }}-${{ matrix.arch }}"
+            [ "$target" = base ] && tag="${{ steps.names.outputs.image }}:base-${{ github.sha }}-${{ matrix.arch }}"
+            podman build --target "$target" \
+              --build-arg XORA_IMAGE="${{ steps.names.outputs.image }}:latest" \
+              --build-arg XORA_VERSION="0.1.${{ github.run_number }}" \
+              -f os/Containerfile --build-context cli=cli -t "$tag" os/
+          done
       - name: push
         if: github.event_name != 'pull_request'
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | podman login ghcr.io -u "${{ github.actor }}" --password-stdin
+          podman push "${{ steps.names.outputs.image }}:base-${{ github.sha }}-${{ matrix.arch }}"
           podman push "${{ steps.names.outputs.image }}:${{ github.sha }}-${{ matrix.arch }}"
 
   publish:
@@ -90,15 +94,20 @@ jobs:
           img="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/xora-os"
           echo "${{ secrets.GITHUB_TOKEN }}" | podman login ghcr.io -u "${{ github.actor }}" --password-stdin
           podman manifest create xora
+          podman manifest create xora-base
           for a in amd64 arm64; do
             podman manifest add xora "docker://$img:${{ github.sha }}-$a" || echo "no $a image this time"
+            podman manifest add xora-base "docker://$img:base-${{ github.sha }}-$a" || echo "no $a base image this time"
           done
           podman manifest push --all xora "docker://$img:latest"
           podman manifest push --all xora "docker://$img:$(date -u +%Y%m%d)"
+          podman manifest push --all xora-base "docker://$img:base"
           echo "IMG=$img" >> "$GITHUB_ENV"
       - uses: sigstore/cosign-installer@v3
       - name: "sign (keyless: anyone can verify it was built by this repository)"
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | cosign login ghcr.io -u "${{ github.actor }}" --password-stdin
-          digest="$(skopeo inspect --format '{{.Digest}}' "docker://$IMG:latest")"
-          cosign sign --yes "$IMG@$digest"
+          for t in latest base; do
+            digest="$(skopeo inspect --format '{{.Digest}}' "docker://$IMG:$t")"
+            cosign sign --yes "$IMG@$digest"
+          done

@@ -13,13 +13,19 @@ if [ -z "${XORA_IMAGE:-}" ]; then
   XORA_IMAGE="${XORA_IMAGE:-$IMAGE}"
 fi
 echo "Installed machines will take updates from: $XORA_IMAGE"
-podman build \
-  --build-arg FEDORA_VERSION="$FEDORA_VERSION" \
-  --build-arg XORA_IMAGE="$XORA_IMAGE" \
-  -f os/Containerfile \
-  -t "$IMAGE" \
-  --build-context cli=cli \
-  os/
+# two images from one build: base (what the installer USB carries: a fast install) and full = base + the
+# toolkit (what installed machines run and update to). The second build reuses every base layer.
+for target in base full; do
+  tag="$IMAGE"; [ "$target" = base ] && tag="${IMAGE%:*}:base"
+  podman build \
+    --build-arg FEDORA_VERSION="$FEDORA_VERSION" \
+    --build-arg XORA_IMAGE="$XORA_IMAGE" \
+    --target "$target" \
+    -f os/Containerfile \
+    -t "$tag" \
+    --build-context cli=cli \
+    os/
+  echo "Built $tag ($target)"
+done
 echo
-echo "Built $IMAGE"
 echo "Next: ./build-iso.sh   (makes a bootable installer ISO)"

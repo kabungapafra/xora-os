@@ -1,0 +1,16 @@
+[Unit]
+Description=XORA: download the toolkit after a fast install from USB
+# after updates are pointed at GitHub (xora-image-origin)
+After=network-online.target xora-image-origin.service
+Wants=network-online.target
+ConditionPathExists=/run/ostree-booted
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/xora/hooks/toolkit-fetch
+Nice=10
+IOSchedulingClass=idle
+TimeoutStartSec=8h
+
+[Install]
+WantedBy=multi-user.target

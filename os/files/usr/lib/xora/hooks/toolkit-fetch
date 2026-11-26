@@ -1,0 +1,44 @@
+#!/bin/bash
+# First boot of a machine installed from the USB stick (the "base" image, for a fast install):
+# download the rest of XORA (the security, DevOps and privacy toolkit) from GitHub in the background,
+# then tell whoever is logged in to restart. Runs again on the next boot until the toolkit is in.
+#   - waits for internet, and never downloads on a metered connection (phone hotspot, mobile data)
+#   - only stages the new version: nothing changes until the restart, and the old one stays for rollback
+set -uo pipefail
+[ "$(cat /usr/lib/xora/variant 2>/dev/null)" = base ] || { echo "toolkit already installed"; exit 0; }
+STATE=/var/lib/xora/toolkit; mkdir -p "$STATE"
+
+notify() {   # a desktop notification for everyone logged in
+  local title="$1" body="$2" u
+  for u in $(loginctl list-users --no-legend 2>/dev/null | awk '$1 >= 1000 {print $2}'); do
+    systemd-run --quiet --machine="$u@.host" --user notify-send -a XORA -i system-software-update "$title" "$body" 2>/dev/null || true
+  done
+}
+
+online_unmetered() {
+  [ "$(nmcli -t -g CONNECTIVITY general 2>/dev/null)" = full ] || return 1
+  case "$(busctl get-property org.freedesktop.NetworkManager /org/freedesktop/NetworkManager org.freedesktop.NetworkManager Metered 2>/dev/null | awk '{print $2}')" in
+    1|3) return 1 ;;      # yes / guessed yes
+  esac
+  return 0
+}
+
+if [ -e "$STATE/staged" ]; then
+  notify "XORA tools are ready" "Restart to finish installing the security, DevOps and privacy tools."
+  exit 0
+fi
+
+# up to ~6 hours of waiting for a usable connection on this boot
+for _ in $(seq 1 360); do online_unmetered && break; sleep 60; done
+online_unmetered || { echo "no unmetered internet yet; trying again next boot"; exit 0; }
+
+notify "Downloading XORA tools" "The security, DevOps and privacy tools are downloading in the background (a few GB). You can keep working."
+if bootc upgrade --quiet; then
+  if bootc status --json | python3 -c 'import json,sys; s=json.load(sys.stdin)["status"]; sys.exit(0 if s.get("staged") else 1)'; then
+    touch "$STATE/staged"
+    notify "XORA tools are ready" "Restart to finish installing the security, DevOps and privacy tools."
+  fi
+else
+  echo "download failed; trying again on the next boot"
+  exit 1
+fi

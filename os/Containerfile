@@ -10,7 +10,7 @@
 #   XORA (this repo)       → look, Kali-style terminal, and the `xora` command:
 #                            Spaces · Timeline · Fabric · Explain · Ask · Privacy · Data · Resilience
 ARG FEDORA_VERSION=44
-FROM quay.io/fedora/fedora-kinoite:${FEDORA_VERSION}
+FROM quay.io/fedora/fedora-kinoite:${FEDORA_VERSION} AS base
 
 # ---- core packages (the build fails if any of these is missing)
 RUN ARCHSKIP="$([ "$(uname -m)" = x86_64 ] || echo --skip-unavailable)"; dnf -y install $ARCHSKIP \
@@ -32,7 +32,7 @@ RUN ARCHSKIP="$([ "$(uname -m)" = x86_64 ] || echo --skip-unavailable)"; dnf -y 
 #      sccache = shared compile cache for Fabric builds
 #      (local AI is opt-in with `xora ai enable`: Fedora's ollama brings ~5 GB of GPU libraries,
 #       too heavy for a lean default image on expensive data)
-RUN dnf -y install --skip-unavailable --setopt=install_weak_deps=False sccache nethogs source-foundry-hack-fonts \
+RUN dnf -y install --skip-unavailable --setopt=install_weak_deps=False sccache nethogs source-foundry-hack-fonts ibm-plex-sans-fonts plymouth-plugin-script \
         papirus-icon-theme qt6-qttools && dnf clean all
 
 # ---- XORA terminal (clean dark window with a header bar) and privacy tools
@@ -50,53 +50,19 @@ RUN dnf -y install --skip-unavailable --setopt=install_weak_deps=False \
         NetworkManager-l2tp plasma-nm-l2tp NetworkManager-vpnc plasma-nm-vpnc NetworkManager-strongswan \
     && dnf clean all
 
-# ---- security toolkit (the rest of Kali's tools: `xora tools kali`, in a container)
-RUN ARCHSKIP="$([ "$(uname -m)" = x86_64 ] || echo --skip-unavailable)"; dnf -y install $ARCHSKIP --setopt=install_weak_deps=False \
-        nmap nmap-ncat wireshark tcpdump hping3 masscan mtr socat whois bind-utils dsniff \
-        john hashcat hydra aircrack-ng gobuster ffuf \
-        radare2 binwalk yara \
-        lynis chkrootkit rkhunter clamav clamav-update \
-    && dnf clean all
-
-# ---- DevOps toolkit
-RUN ARCHSKIP="$([ "$(uname -m)" = x86_64 ] || echo --skip-unavailable)"; dnf -y install $ARCHSKIP --setopt=install_weak_deps=False \
-        ansible-core opentofu helm k9s awscli2 gh git-lfs jq yq httpie \
-        podman-compose buildah skopeo trivy \
-    && dnf -y install --skip-unavailable --setopt=install_weak_deps=False kubernetes-client kubectl \
-    && dnf clean all
-
-# ---- more privacy, security and developer tools (added after the first public build: a separate layer,
-#      so machines that already have XORA download only this part)
-#      Tor Browser, OnionShare, zuluCrypt (encrypted folders/USB sticks, opens VeraCrypt volumes),
-#      ProjectDiscovery recon (nuclei, subfinder, dnsx), Sleuth Kit forensics, Kismet (Wi-Fi),
-#      a `docker` command that runs Podman, kind (local Kubernetes), Neovim and Go
-RUN dnf -y install --skip-unavailable --setopt=install_weak_deps=False \
-        torbrowser-launcher onionshare zulucrypt \
-        nuclei subfinder dnsx sleuthkit kismet \
-        podman-docker kind neovim golang \
-    && touch /etc/containers/nodocker \
-    && for t in torbrowser-launcher onionshare nuclei subfinder sleuthkit podman-docker kind neovim golang; do \
-         rpm -q "$t" >/dev/null || echo "XORA: $t not available on $(uname -m)"; done \
-    && dnf clean all
-
-# ---- boot splash engine for the XORA Plymouth theme
-RUN ARCHSKIP="$([ "$(uname -m)" = x86_64 ] || echo --skip-unavailable)"; dnf -y install $ARCHSKIP plymouth-plugin-script && dnf clean all
-
-# ---- no Fedora branding where people see it: Welcome Center ("Welcome to Fedora!"), Fedora global
-#      themes, wallpapers and bookmarks. --nodeps because plasma-desktop formally requires the welcome
-#      app; XORA Center replaces it. (fedora-release, repos and keys stay: updates need them.)
+# ---- no Fedora branding where people see it, and stealth: nothing announces this computer or calls home.
+#      Welcome Center ("Welcome to Fedora!"), Fedora global themes, wallpapers and bookmarks go (--nodeps:
+#      plasma-desktop formally requires the welcome app; XORA Center replaces it). KDE Connect broadcasts the
+#      computer's name to the whole network (Fabric replaces it); the connectivity check (plain HTTP to
+#      fedoraproject.org), the weekly "countme" ping and the Fedora NTP pool told the network which OS this is:
+#      time now comes from authenticated NTS servers. Bluetooth uses a random, changing address.
+#      One step, so the 150 MB package database is rewritten once.
 RUN rpm -e --nodeps plasma-welcome plasma-welcome-fedora plasma-lookandfeel-fedora \
         fedora-workstation-backgrounds fedora-bookmarks \
+        kde-connect kdeconnectd kde-connect-libs NetworkManager-config-connectivity-fedora \
     && rm -rf /usr/share/plasma/look-and-feel/org.fedoraproject.* \
     && sed -i '/^\[Desktop Entry\]/a NoDisplay=true' /usr/share/applications/org.kde.konsole.desktop \
-    && ! rpm -q plasma-welcome
-
-# ---- stealth: nothing announces this computer or calls home to Fedora.
-#      KDE Connect broadcasts the computer's name to the whole network every few seconds (Fabric replaces it);
-#      the connectivity check (plain HTTP to fedoraproject.org), the weekly "countme" ping and the Fedora NTP
-#      pool all told the network and Fedora which OS this is. Time now comes from authenticated NTS servers.
-#      Bluetooth uses a random, changing address (Privacy = device) and a neutral name, so it can't be tracked.
-RUN rpm -e --nodeps kde-connect kdeconnectd kde-connect-libs NetworkManager-config-connectivity-fedora \
+    && ! rpm -q plasma-welcome && ! rpm -q kdeconnectd \
     && sed -i -E 's/^(pool|server) .*fedora.*$//' /etc/chrony.conf \
     && printf '%s\n' '# XORA: authenticated time (NTS) from neutral servers' \
          'server time.cloudflare.com iburst nts' 'server nts.netnod.se iburst nts' 'server ptbtime1.ptb.de iburst nts' >> /etc/chrony.conf \
@@ -106,7 +72,7 @@ RUN rpm -e --nodeps kde-connect kdeconnectd kde-connect-libs NetworkManager-conf
     && grep -q '^Privacy = device' /etc/bluetooth/main.conf \
     && sed -i 's/^#\?disable-publishing=.*/disable-publishing=yes/' /etc/avahi/avahi-daemon.conf \
     && grep -q '^disable-publishing=yes' /etc/avahi/avahi-daemon.conf \
-    && ! rpm -q kdeconnectd
+    && true
 
 # ---- XORA files: theme, wallpaper, boot splash, Konsole, zsh, services
 COPY files/ /
@@ -123,7 +89,6 @@ RUN set -eux; \
     [ "$(grep -c 'wallpaperFader.factor: 1$' "$D/XoraWallpaperFader.qml")" = 2 ]; \
     python3 /usr/lib/xora/build/patch-lockscreen.py "$D/LockScreenUi.qml"; \
     grep -q "XoraClock {" "$D/LockScreenUi.qml"; grep -q "XoraWallpaperFader {" "$D/LockScreenUi.qml"; \
-    dnf -y install --setopt=install_weak_deps=False ibm-plex-sans-fonts && dnf clean all; \
     fc-list | grep -q "IBM Plex Sans"
 
 # ---- the xora command
@@ -178,7 +143,7 @@ RUN set -eux; \
     # per-user services: Timeline cleanup, Resilience watcher, Fabric mirror, Explain cards
     systemctl --global enable xora-timeline-prune.timer xora-resilience.service xora-mirror.timer xora-explain.service xora-session-defaults.service; \
     # per-app data budgets; boot health checks with automatic rollback
-    systemctl enable xora-netbudget.service greenboot-healthcheck.service xora-image-origin.service xora-stealth.service xora-fixups.service; \
+    systemctl enable xora-netbudget.service greenboot-healthcheck.service xora-image-origin.service xora-stealth.service xora-fixups.service xora-toolkit.service; \
     #
     # UPS: NUT tells XORA when mains power is lost
     if [ -f /etc/ups/upsmon.conf ]; then \
@@ -219,3 +184,40 @@ LABEL org.opencontainers.image.version="${XORA_VERSION}" \
       containers.bootc="1" \
       ostree.bootable="1"
 RUN echo "${XORA_IMAGE}" > /usr/lib/xora/image-ref && test -s /usr/lib/xora/image-ref
+RUN echo base > /usr/lib/xora/variant
+
+# ======================================================================================================
+# full = base + the toolkit. The installer USB carries only base (a much faster install); on first boot an
+# installed machine downloads just these extra layers from GitHub and has them after a restart.
+# Machines take updates from this image.
+FROM base AS full
+# ---- security toolkit (the rest of Kali's tools: `xora tools kali`, in a container)
+RUN ARCHSKIP="$([ "$(uname -m)" = x86_64 ] || echo --skip-unavailable)"; dnf -y install $ARCHSKIP --setopt=install_weak_deps=False \
+        nmap nmap-ncat wireshark tcpdump hping3 masscan mtr socat whois bind-utils dsniff \
+        john hashcat hydra aircrack-ng gobuster ffuf \
+        radare2 binwalk yara \
+        lynis chkrootkit rkhunter clamav clamav-update \
+    && dnf clean all
+
+# ---- DevOps toolkit
+RUN ARCHSKIP="$([ "$(uname -m)" = x86_64 ] || echo --skip-unavailable)"; dnf -y install $ARCHSKIP --setopt=install_weak_deps=False \
+        ansible-core opentofu helm k9s awscli2 gh git-lfs jq yq httpie \
+        podman-compose buildah skopeo trivy \
+    && dnf -y install --skip-unavailable --setopt=install_weak_deps=False kubernetes-client kubectl \
+    && dnf clean all
+
+# ---- more privacy, security and developer tools (added after the first public build: a separate layer,
+#      so machines that already have XORA download only this part)
+#      Tor Browser, OnionShare, zuluCrypt (encrypted folders/USB sticks, opens VeraCrypt volumes),
+#      ProjectDiscovery recon (nuclei, subfinder, dnsx), Sleuth Kit forensics, Kismet (Wi-Fi),
+#      a `docker` command that runs Podman, kind (local Kubernetes), Neovim and Go
+RUN dnf -y install --skip-unavailable --setopt=install_weak_deps=False \
+        torbrowser-launcher onionshare zulucrypt \
+        nuclei subfinder dnsx sleuthkit kismet \
+        podman-docker kind neovim golang \
+    && touch /etc/containers/nodocker \
+    && for t in torbrowser-launcher onionshare nuclei subfinder sleuthkit podman-docker kind neovim golang; do \
+         rpm -q "$t" >/dev/null || echo "XORA: $t not available on $(uname -m)"; done \
+    && dnf clean all
+
+RUN echo full > /usr/lib/xora/variant && bootc container lint

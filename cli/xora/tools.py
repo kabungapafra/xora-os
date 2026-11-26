@@ -175,6 +175,12 @@ def cmd_tools(a):
         if not _kali_exists():
             die("the Kali toolset isn't set up yet. Run: xora tools kali")
         return run(["distrobox", "enter", KALI, "--", *a.cmd]).returncode
+    variant = Path("/usr/lib/xora/variant")
+    if variant.exists() and variant.read_text().strip() == "base":
+        staged = Path("/var/lib/xora/toolkit/staged").exists()
+        warn("the XORA toolkit is " + ("downloaded: restart to finish installing it" if staged else
+             "still to come: it downloads by itself after installing (or: sudo systemctl start xora-toolkit)"))
+        print()
     for cat, tools in TOOLKIT:
         print(bold(cyan(cat)))
         for name, what in tools:

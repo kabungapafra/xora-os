@@ -5,6 +5,13 @@ printf '\033[1;36m%s\033[0m  %s\n\n' "$tool" "$*"
 if command -v "$tool" >/dev/null 2>&1; then
   { "$tool" --help 2>&1 || "$tool" -h 2>&1; } | head -40
   printf '\n\033[2mType "%s ..." to use it · "man %s" for the full manual · "xora tools" lists every tool\033[0m\n\n' "$tool" "$tool"
+elif [ "$(cat /usr/lib/xora/variant 2>/dev/null)" = base ]; then
+  # installed from the USB stick: the toolkit arrives after the first boot with internet
+  if [ -e /var/lib/xora/toolkit/staged ]; then
+    printf '%s is downloaded and ready: restart the computer to finish installing the XORA toolkit.\n\n' "$tool"
+  else
+    printf '%s is part of the XORA toolkit, which downloads by itself after installing\n(needs internet that is not metered; you get a notification, then restart).\nStart it now with:  sudo systemctl start xora-toolkit\n\n' "$tool"
+  fi
 elif command -v distrobox >/dev/null 2>&1 && distrobox list --no-color 2>/dev/null | grep -qw kali; then
   # part of the Kali toolset, which is installed: run it from its container
   if distrobox enter kali -- sh -c "command -v '$tool'" >/dev/null 2>&1; then
