@@ -11,19 +11,6 @@
 #                            Spaces · Timeline · Fabric · Explain · Ask · Privacy · Data · Resilience
 ARG FEDORA_VERSION=44
 FROM quay.io/fedora/fedora-kinoite:${FEDORA_VERSION}
-# where installed machines take updates from; the GitHub build sets ghcr.io/<owner>/xora-os:latest
-ARG XORA_IMAGE=localhost/xora-os:latest
-
-# XORA's own version (bootc status / update notices show this, not the base system's 44.x number)
-ARG XORA_VERSION=0.1
-LABEL org.opencontainers.image.version="${XORA_VERSION}" \
-      ostree.version="${XORA_VERSION}" \
-      org.opencontainers.image.source="https://github.com/kabungapafra/xora-os" \
-      org.opencontainers.image.licenses="GPL-3.0-or-later" \
-      org.opencontainers.image.title="XORA OS" \
-      org.opencontainers.image.description="Your devices. Your projects. One connected workspace." \
-      containers.bootc="1" \
-      ostree.bootable="1"
 
 # ---- core packages (the build fails if any of these is missing)
 RUN ARCHSKIP="$([ "$(uname -m)" = x86_64 ] || echo --skip-unavailable)"; dnf -y install $ARCHSKIP \
@@ -192,8 +179,6 @@ RUN set -eux; \
     systemctl --global enable xora-timeline-prune.timer xora-resilience.service xora-mirror.timer xora-explain.service xora-session-defaults.service; \
     # per-app data budgets; boot health checks with automatic rollback
     systemctl enable xora-netbudget.service greenboot-healthcheck.service xora-image-origin.service xora-stealth.service xora-fixups.service; \
-    # the public image this build belongs to (installs switch their update source to it on first boot)
-    echo "${XORA_IMAGE}" > /usr/lib/xora/image-ref; \
     #
     # UPS: NUT tells XORA when mains power is lost
     if [ -f /etc/ups/upsmon.conf ]; then \
@@ -219,3 +204,18 @@ RUN sed -i 's|file:///usr/share/wallpapers/Fedora/|file:///usr/share/wallpapers/
     && grep -q wallpapers/XORA /usr/lib/plasmalogin/defaults.conf
 
 RUN bootc container lint
+
+# ---- last, so changing them never re-runs the package steps above (each build passes a new version):
+#      XORA's version (bootc status shows this, not the base system's 44.x) and where installed machines
+#      take updates from (installs switch to it on first boot; the GitHub build sets ghcr.io/<owner>/xora-os)
+ARG XORA_IMAGE=localhost/xora-os:latest
+ARG XORA_VERSION=0.1
+LABEL org.opencontainers.image.version="${XORA_VERSION}" \
+      ostree.version="${XORA_VERSION}" \
+      org.opencontainers.image.source="https://github.com/kabungapafra/xora-os" \
+      org.opencontainers.image.licenses="GPL-3.0-or-later" \
+      org.opencontainers.image.title="XORA OS" \
+      org.opencontainers.image.description="Your devices. Your projects. One connected workspace." \
+      containers.bootc="1" \
+      ostree.bootable="1"
+RUN echo "${XORA_IMAGE}" > /usr/lib/xora/image-ref && test -s /usr/lib/xora/image-ref
