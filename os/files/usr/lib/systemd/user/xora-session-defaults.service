@@ -1,0 +1,11 @@
+[Unit]
+Description=XORA: default keyboard shortcuts (Super = Overview) before the desktop starts
+Before=plasma-kglobalaccel.service plasma-plasmashell.service
+PartOf=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/xora/hooks/session-defaults
+
+[Install]
+WantedBy=graphical-session-pre.target

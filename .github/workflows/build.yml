@@ -70,6 +70,7 @@ jobs:
         run: |
           podman build \
             --build-arg XORA_IMAGE="${{ steps.names.outputs.image }}:latest" \
+            --build-arg XORA_VERSION="0.1.${{ github.run_number }}" \
             -f os/Containerfile --build-context cli=cli \
             -t "${{ steps.names.outputs.image }}:${{ github.sha }}-${{ matrix.arch }}" os/
       - name: push

@@ -14,7 +14,13 @@ FROM quay.io/fedora/fedora-kinoite:${FEDORA_VERSION}
 # where installed machines take updates from; the GitHub build sets ghcr.io/<owner>/xora-os:latest
 ARG XORA_IMAGE=localhost/xora-os:latest
 
-LABEL org.opencontainers.image.title="XORA OS" \
+# XORA's own version (bootc status / update notices show this, not the base system's 44.x number)
+ARG XORA_VERSION=0.1
+LABEL org.opencontainers.image.version="${XORA_VERSION}" \
+      ostree.version="${XORA_VERSION}" \
+      org.opencontainers.image.source="https://github.com/kabungapafra/xora-os" \
+      org.opencontainers.image.licenses="GPL-3.0-or-later" \
+      org.opencontainers.image.title="XORA OS" \
       org.opencontainers.image.description="Your devices. Your projects. One connected workspace." \
       containers.bootc="1" \
       ostree.bootable="1"
@@ -40,7 +46,7 @@ RUN ARCHSKIP="$([ "$(uname -m)" = x86_64 ] || echo --skip-unavailable)"; dnf -y 
 #      (local AI is opt-in with `xora ai enable`: Fedora's ollama brings ~5 GB of GPU libraries,
 #       too heavy for a lean default image on expensive data)
 RUN dnf -y install --skip-unavailable --setopt=install_weak_deps=False sccache nethogs source-foundry-hack-fonts \
-        yaru-icon-theme papirus-icon-theme qt6-qttools && dnf clean all
+        papirus-icon-theme qt6-qttools && dnf clean all
 
 # ---- XORA terminal (clean dark window with a header bar) and privacy tools
 #      Anon mode (Tor + kill switch), metadata cleaner, MAC changer, app sandbox, USB device guard, password manager
@@ -81,6 +87,7 @@ RUN ARCHSKIP="$([ "$(uname -m)" = x86_64 ] || echo --skip-unavailable)"; dnf -y 
 RUN rpm -e --nodeps plasma-welcome plasma-welcome-fedora plasma-lookandfeel-fedora \
         fedora-workstation-backgrounds fedora-bookmarks \
     && rm -rf /usr/share/plasma/look-and-feel/org.fedoraproject.* \
+    && sed -i '/^\[Desktop Entry\]/a NoDisplay=true' /usr/share/applications/org.kde.konsole.desktop \
     && ! rpm -q plasma-welcome
 
 # ---- XORA files: theme, wallpaper, boot splash, Konsole, zsh, services
@@ -135,7 +142,7 @@ RUN set -eux; \
     systemctl enable bootc-fetch-apply-updates.timer || true; \
     #
     # per-user services: Timeline cleanup, Resilience watcher, Fabric mirror, Explain cards
-    systemctl --global enable xora-timeline-prune.timer xora-resilience.service xora-mirror.timer xora-explain.service; \
+    systemctl --global enable xora-timeline-prune.timer xora-resilience.service xora-mirror.timer xora-explain.service xora-session-defaults.service; \
     # per-app data budgets; boot health checks with automatic rollback
     systemctl enable xora-netbudget.service greenboot-healthcheck.service xora-image-origin.service; \
     # the public image this build belongs to (installs switch their update source to it on first boot)

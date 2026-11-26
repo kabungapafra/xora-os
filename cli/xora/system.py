@@ -430,6 +430,12 @@ def cmd_status(a):
             today = sum(d.get("rx", 0) + d.get("tx", 0) for d in days) or None
         except (json.JSONDecodeError, TypeError):
             pass
+    try:   # internet only (the budget service skips LAN / Fabric traffic, which costs no data)
+        nb = json.loads(NETBUDGET_STATUS.read_text())
+        if nb.get("day") == time.strftime("%F") and "internet" in nb:
+            today, label = nb["internet"], "today"
+    except (OSError, ValueError):
+        pass
     if today is None:
         today, label = 0, "since boot"
         for dev in Path("/sys/class/net").iterdir():

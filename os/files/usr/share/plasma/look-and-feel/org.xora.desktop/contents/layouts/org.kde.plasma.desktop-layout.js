@@ -64,5 +64,4 @@ grid.writeConfig("useCustomButtonImage", true);
 grid.writeConfig("customButtonImage", "view-app-grid-symbolic");
 grid.writeConfig("showRecentApps", false);
 grid.writeConfig("showRecentDocs", false);
-grid.currentConfigGroup = ["Shortcuts"];
-grid.writeConfig("global", "Meta+A");
+grid.globalShortcut = "Meta+A";

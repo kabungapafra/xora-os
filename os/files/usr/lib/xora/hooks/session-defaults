@@ -1,0 +1,13 @@
+#!/bin/bash
+# Runs at login before KDE's shortcut service starts. KDE only reads each user's own shortcut file,
+# so XORA's defaults are written there once. After that the user's own changes are never touched.
+#   Super = Overview (windows + workspaces + search) · Alt+F1 = classic menu · Ctrl+Alt+T = Ptyxis
+set -u
+marker="${XDG_STATE_HOME:-$HOME/.local/state}/xora/session-defaults-v1"
+[ -e "$marker" ] && exit 0
+w() { kwriteconfig6 --file kglobalshortcutsrc "$@"; }
+w --group kwin --key Overview $'Meta\tMeta+W,Meta+W,Toggle Overview'
+w --group plasmashell --key "activate application launcher" "Alt+F1,Alt+F1,Activate Application Launcher"
+w --group services --group org.gnome.Ptyxis.desktop --key _launch "Ctrl+Alt+T"
+w --group services --group org.kde.konsole.desktop --key _launch "none"
+mkdir -p "$(dirname "$marker")" && date > "$marker"
