@@ -8,6 +8,7 @@
 #   fabric-on     a device is linked: SSH (keys only) and mDNS from the local network, announce for linked devices
 #   fabric-off    no linked devices left: back to stealth
 #   cache-on|cache-off   the OS update cache for linked devices (port 5000, local network)
+#   migrate       once after updating from an older XORA (boot service)
 #   status        what is reachable right now
 set -euo pipefail
 
@@ -92,6 +93,29 @@ case "${1:-status}" in
   cache-off)
     lan_port remove 5000 --permanent; lan_port remove 5000
     rm -f "$STATE/cache"
+    ;;
+  migrate)
+    # once, at boot after an update from an older XORA: the old zone opened SSH, mDNS, pairing and the cache
+    # port all the time; a saved local copy of it in /etc would keep them open. Close them; then re-open
+    # SSH the new way (local network only) if this computer already has linked Fabric devices.
+    [ -e "$STATE/migrated-v2" ] && exit 0
+    for p in --permanent ""; do
+      # shellcheck disable=SC2086
+      # one item per call: firewall-cmd refuses to mix --remove-service and --remove-port
+      for item in --remove-service=ssh --remove-service=mdns --remove-port=47821/tcp --remove-port=5000/tcp; do
+        fw --zone=xora "$item" $p
+      done
+    done
+    # verify: fail loudly (and try again next boot) if anything old is still open
+    if firewall-cmd --permanent --zone=xora --list-all | grep -qE '^\s*(services:.*\bssh\b|ports:.*(47821|5000))'; then
+      [ "${linked:-}" = yes ] || { echo "old open ports are still in the firewall" >&2; exit 1; }
+    fi
+    linked=no
+    for f in /var/home/*/.config/xora/devices.yaml /home/*/.config/xora/devices.yaml; do
+      [ -s "$f" ] && grep -q '^[^#[:space:]{}].*:' "$f" && linked=yes
+    done
+    if [ "$linked" = yes ]; then "$0" fabric-on; else systemctl disable --now sshd.service || true; publishing off; fi
+    touch "$STATE/migrated-v2"
     ;;
   status)
     open=()

@@ -159,7 +159,7 @@ RUN set -eux; \
     # per-user services: Timeline cleanup, Resilience watcher, Fabric mirror, Explain cards
     systemctl --global enable xora-timeline-prune.timer xora-resilience.service xora-mirror.timer xora-explain.service xora-session-defaults.service; \
     # per-app data budgets; boot health checks with automatic rollback
-    systemctl enable xora-netbudget.service greenboot-healthcheck.service xora-image-origin.service; \
+    systemctl enable xora-netbudget.service greenboot-healthcheck.service xora-image-origin.service xora-stealth.service; \
     # the public image this build belongs to (installs switch their update source to it on first boot)
     echo "${XORA_IMAGE}" > /usr/lib/xora/image-ref; \
     #

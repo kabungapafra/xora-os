@@ -1,0 +1,12 @@
+[Unit]
+Description=XORA: stealth network defaults (once, after updating from an older version)
+After=firewalld.service avahi-daemon.service
+Wants=firewalld.service
+ConditionPathExists=!/var/lib/xora/exposure/migrated-v2
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/xora/hooks/exposure migrate
+
+[Install]
+WantedBy=multi-user.target
