@@ -124,6 +124,21 @@ RUN rpm -e --nodeps kde-connect kdeconnectd kde-connect-libs NetworkManager-conf
 # ---- XORA files: theme, wallpaper, boot splash, Konsole, zsh, services
 COPY files/ /
 
+# ---- lock screen like Ubuntu/GNOME: the date above a large light clock with "Click or press a key to unlock",
+#      the wallpaper always blurred and dimmed, and the clock giving way to the password prompt.
+#      KDE's own files are patched here (not replaced), and the build stops if a KDE update changes them,
+#      so a broken lock screen can never ship.
+RUN set -eux; \
+    D=/usr/share/plasma/shells/org.kde.plasma.desktop/contents/lockscreen; \
+    C=/usr/lib64/qt6/qml/org/kde/breeze/components; [ -d "$C" ] || C=/usr/lib/qt6/qml/org/kde/breeze/components; \
+    test -f "$D/XoraClock.qml"; \
+    sed 's/wallpaperFader.factor: 0$/wallpaperFader.factor: 1/' "$C/WallpaperFader.qml" > "$D/XoraWallpaperFader.qml"; \
+    [ "$(grep -c 'wallpaperFader.factor: 1$' "$D/XoraWallpaperFader.qml")" = 2 ]; \
+    python3 /usr/lib/xora/build/patch-lockscreen.py "$D/LockScreenUi.qml"; \
+    grep -q "XoraClock {" "$D/LockScreenUi.qml"; grep -q "XoraWallpaperFader {" "$D/LockScreenUi.qml"; \
+    dnf -y install --setopt=install_weak_deps=False ibm-plex-sans-fonts && dnf clean all; \
+    fc-list | grep -q "IBM Plex Sans"
+
 # ---- the xora command
 COPY --from=cli xora/ /usr/lib/xora/xora/
 
@@ -176,7 +191,7 @@ RUN set -eux; \
     # per-user services: Timeline cleanup, Resilience watcher, Fabric mirror, Explain cards
     systemctl --global enable xora-timeline-prune.timer xora-resilience.service xora-mirror.timer xora-explain.service xora-session-defaults.service; \
     # per-app data budgets; boot health checks with automatic rollback
-    systemctl enable xora-netbudget.service greenboot-healthcheck.service xora-image-origin.service xora-stealth.service; \
+    systemctl enable xora-netbudget.service greenboot-healthcheck.service xora-image-origin.service xora-stealth.service xora-fixups.service; \
     # the public image this build belongs to (installs switch their update source to it on first boot)
     echo "${XORA_IMAGE}" > /usr/lib/xora/image-ref; \
     #

@@ -1,0 +1,18 @@
+#!/bin/bash
+# One-time repairs at boot for things the installer or older XORA versions left behind.
+set -euo pipefail
+STATE=/var/lib/xora/fixups
+mkdir -p "$STATE"
+
+# 1. The installer writes a "/" line to /etc/fstab with options for a normal disk. XORA's root is a
+#    read-only image (composefs overlay) that can't be remounted with them, so systemd-remount-fs
+#    failed on every boot. The root is mounted from the boot entry, not fstab: comment the line out.
+if [ ! -e "$STATE/fstab-root" ]; then
+  if [ "$(findmnt -no FSTYPE /)" = overlay ] && grep -qE '^[^#[:space:]]+[[:space:]]+/[[:space:]]' /etc/fstab; then
+    cp -a /etc/fstab /etc/fstab.before-xora-fix
+    sed -i -E 's|^([^#[:space:]]+[[:space:]]+/[[:space:]].*)$|# XORA: the root is the OS image (mounted at boot), not this entry\n# \1|' /etc/fstab
+    systemctl daemon-reload
+    systemctl reset-failed systemd-remount-fs.service 2>/dev/null || true
+  fi
+  touch "$STATE/fstab-root"
+fi

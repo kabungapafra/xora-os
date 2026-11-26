@@ -786,6 +786,8 @@ class PairPage(Gtk.ScrolledWindow):
         if d:
             self.caps_title.set_text(f"What can {self.selected} do?")
             can = set(d.get("can") or [])
+            if "run" in can:              # the terminal's "run" and Center's "Run my builds" are one permission
+                can.add("build")
             for key, cb in self.checks.items():
                 cb.set_active(key in can)
             self.caps_note.set_text("Changes are saved straight away. Unlink with: xora fabric revoke " + self.selected)

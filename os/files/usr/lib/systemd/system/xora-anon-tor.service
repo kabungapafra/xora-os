@@ -6,10 +6,14 @@ Wants=network-online.target
 [Service]
 User=toranon
 Group=toranon
-StateDirectory=xora-anon
+# under /var/lib/tor so it gets Tor's SELinux label
+StateDirectory=tor/xora-anon
 StateDirectoryMode=0700
 ExecStart=/usr/bin/tor -f /usr/share/xora/anon-torrc
-NoNewPrivileges=yes
+# No NoNewPrivileges: it would stop the switch into Tor's SELinux domain (tor_t), and Tor would run
+# as init_t instead, which SELinux doesn't allow to reach Tor relays (it still runs as user toranon).
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
 ProtectSystem=strict
 ProtectHome=yes
 PrivateTmp=yes

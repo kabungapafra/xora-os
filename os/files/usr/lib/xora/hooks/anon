@@ -19,12 +19,15 @@ table inet $TABLE {
     oifname "lo" return
     ip daddr 127.0.0.0/8 return
     ip daddr $LAN return
-    udp dport 53 redirect to :5353
-    meta nfproto ipv4 meta l4proto tcp redirect to :9040
+    udp dport 53 redirect to :53
+    meta nfproto ipv4 meta l4proto tcp redirect to :9030
   }
   chain filter_out {
     type filter hook output priority 0; policy drop;
     oifname "lo" accept
+    # redirected to Tor above: the output interface is still the real one at this point (the route to
+    # 127.0.0.1 is only re-done after these hooks), so accept by the redirect, not by "lo"
+    ct status dnat ip daddr 127.0.0.1 accept
     meta skuid $tor_uid accept
     ct state established,related accept
     ip daddr $LAN accept

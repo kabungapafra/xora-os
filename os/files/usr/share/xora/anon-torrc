@@ -1,10 +1,12 @@
 # XORA Anon mode: a dedicated Tor instance that carries ALL of this computer's traffic.
 # Separate from any Tor the user runs themselves (different ports and data directory).
-DataDirectory /var/lib/xora-anon
+# Ports: SELinux lets Tor listen only on its own port type (6969, 9001, 9030, 9050, 9051, 9150) and on DNS (53):
+# 9150 SOCKS (Tor Browser's port), 9030 transparent proxy, 53 on 127.0.0.1 for DNS (resolved uses 127.0.0.53).
+DataDirectory /var/lib/tor/xora-anon
 RunAsDaemon 0
 SocksPort 127.0.0.1:9150
-TransPort 127.0.0.1:9040 IsolateClientAddr IsolateDestAddr IsolateDestPort
-DNSPort 127.0.0.1:5353
+TransPort 127.0.0.1:9030 IsolateClientAddr IsolateDestAddr IsolateDestPort
+DNSPort 127.0.0.1:53
 VirtualAddrNetworkIPv4 10.192.0.0/10
 AutomapHostsOnResolve 1
 AvoidDiskWrites 1

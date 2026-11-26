@@ -125,7 +125,8 @@ case "${1:-status}" in
     if [ ${#open[@]} -eq 0 ]; then
       echo "stealth: nothing on this computer answers or announces itself"
     else
-      printf 'reachable from the local network only: %s\n' "$(IFS=,; echo "${open[*]}" | sed 's/,/, /g')"
+      list=""; for item in "${open[@]}"; do list="${list:+$list; }$item"; done
+      printf 'reachable from the local network only: %s\n' "$list"
     fi
     ;;
   *) echo "usage: $0 pair-open|pair-close|seek|fabric-on|fabric-off|cache-on|cache-off|status" >&2; exit 2 ;;

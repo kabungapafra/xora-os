@@ -98,7 +98,7 @@ def build():
     tl.add_argument("--all", action="store_true", help="also show system and app history")
     tl.set_defaults(fn=timeline.cmd_list)
     ts = tl.add_subparsers(dest="sub", metavar="<action>")
-    x = ts.add_parser("list")
+    x = ts.add_parser("list", aliases=["ls"])
     x.add_argument("--path")
     x.add_argument("--limit", type=int, default=25)
     x.add_argument("--all", action="store_true")

@@ -58,7 +58,12 @@ def expose(action):
     except (OSError, subprocess.TimeoutExpired):
         return False
     if r.returncode != 0:
-        warn(f"couldn't change network visibility ({action}); linked devices may not reach this one")
+        if action == "fabric-off":
+            warn("couldn't switch SSH off again (no admin password given). Do it with: "
+                 "sudo /usr/lib/xora/hooks/exposure fabric-off")
+        else:
+            warn(f"couldn't change network visibility ({action}); linked devices may not reach this one. "
+                 f"Try: sudo {hook} {action}")
     return r.returncode == 0
 
 
@@ -178,7 +183,8 @@ def cmd_ls(a):
 
 
 def _pick(devs, cap):
-    cands = {n: d for n, d in devs.items() if cap in d.get("can", [])}
+    same = {"run": {"run", "build"}, "build": {"run", "build"}}.get(cap, {cap})   # one permission in Center
+    cands = {n: d for n, d in devs.items() if same & set(d.get("can", []))}
     with ThreadPoolExecutor(8) as ex:
         probes = dict(zip(cands, ex.map(lambda n: _probe(cands[n]["host"]), cands)))
     best, best_score = None, _score(_local())

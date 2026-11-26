@@ -1,0 +1,11 @@
+[Unit]
+Description=XORA: one-time repairs (installer leftovers)
+After=local-fs.target
+ConditionPathExists=!/var/lib/xora/fixups/fstab-root
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/xora/hooks/fixups
+
+[Install]
+WantedBy=multi-user.target
