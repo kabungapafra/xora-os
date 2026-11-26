@@ -7,5 +7,7 @@ want="$(cat /usr/lib/xora/image-ref 2>/dev/null || true)"
 case "$want" in ""|localhost/*) echo "no public image configured in this build"; exit 0 ;; esac
 have="$(bootc status --json | python3 -c 'import json,sys; print(json.load(sys.stdin)["status"]["booted"]["image"]["image"]["image"])' 2>/dev/null || true)"
 if [ "$have" = "$want" ]; then echo "updates already come from $want"; exit 0; fi
-bootc switch --mutate-in-place --transport registry "$want"
+# /sysroot is mounted read-only; make it writable only inside a private mount namespace for this one
+# change (what ostree's own tools do), otherwise bootc fails with "Read-only file system"
+unshare -m sh -c 'mount -o remount,rw /sysroot && exec bootc switch --mutate-in-place --transport registry "$1"' _ "$want"
 echo "updates now come from $want (was: ${have:-unknown})"

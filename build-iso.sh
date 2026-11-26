@@ -12,9 +12,12 @@ mkdir -p "$OUT" output-cache/store output-cache/rpmmd   # cache: a retry resumes
 # bootc-image-builder reads from root's container storage, so copy the image there
 # (again whenever the rootless build is newer than root's copy).
 SUDO="${SUDO:-sudo}"
-MINE="$(podman image inspect --format '{{.Id}}' "$IMAGE")"
+MINE="$(podman image inspect --format '{{.Id}}' "$IMAGE" 2>/dev/null || true)"
 ROOTS="$($SUDO podman image inspect --format '{{.Id}}' "$IMAGE" 2>/dev/null || true)"
-if [ "$MINE" != "$ROOTS" ]; then
+if [ -z "$MINE" ] && [ -z "$ROOTS" ]; then
+  echo "No $IMAGE found: build it first with ./build.sh" >&2; exit 1
+fi
+if [ -n "$MINE" ] && [ "$MINE" != "$ROOTS" ]; then
   echo "Copying $IMAGE into root's container storage…"
   podman save "$IMAGE" | $SUDO podman load
 fi
