@@ -1,6 +1,7 @@
 # Installer settings for bootc-image-builder (the public ISO).
-# The installer asks for language, time zone, disk and user: nothing is erased until you choose a disk
-# in "Installation Destination" and press Begin Installation.
+# The installer opens on the summary screen and only needs two things: the disk ("Installation
+# Destination") and your user ("User Creation"). Nothing is erased until you press Begin Installation.
+# Language, keyboard and time zone are preset below and can still be changed on the summary screen.
 # Uncomment to pre-fill a user instead.
 # [[customizations.user]]
 # name = "pafra"
@@ -8,7 +9,14 @@
 
 [customizations.installer.kickstart]
 contents = """
-# XORA OS installer: boot straight into the desktop after installing
+# XORA OS installer
+# preset, so the language screen is skipped (it is slow on older PCs) and the summary screen opens directly
+lang en_US.UTF-8
+keyboard us
+timezone UTC --utc
+# no root password, like Ubuntu: the user you create gets administrator rights (sudo)
+rootpw --lock
+# boot straight into the desktop after installing
 xconfig --startxonboot
 """
 
