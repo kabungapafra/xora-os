@@ -75,7 +75,7 @@ if [ "${XORA_ZSTD:-1}" = 1 ]; then
   else SKOPEO=($SUDO podman run --rm --security-opt label=disable -v "$w:/w" "${SKOPEO_IMAGE:-localhost/xora-os:base}" skopeo); fi
   xorriso -osirrox on -indev "$in" -extract /container "$w/container" >/dev/null 2>&1
   chmod -R u+w "$w/container"
-  if find "$w/container/blobs/sha256" -type f -size -1M -exec grep -l 'tar+gzip' {} + 2>/dev/null | grep -q .; then
+  if find "$w/container/blobs/sha256" -type f -size -1024k -exec grep -l 'tar+gzip' {} + 2>/dev/null | grep -q .; then
     echo "installer image: gzip -> zstd"
     src=/w/container dst=/w/container-zstd; command -v skopeo >/dev/null && { src="$w/container"; dst="$w/container-zstd"; }
     "${SKOPEO[@]}" copy --quiet --dest-compress-format zstd "oci:$src" "oci:$dst"

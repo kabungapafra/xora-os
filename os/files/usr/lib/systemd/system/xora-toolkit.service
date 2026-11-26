@@ -1,16 +1,19 @@
 [Unit]
 Description=XORA: download the toolkit after a fast install from USB
-# after updates are pointed at GitHub (xora-image-origin)
-After=network-online.target xora-image-origin.service
+# after updates are pointed at GitHub (xora-image-origin), and after tuned: at startup it runs bootc
+# for boot settings, which would wait on this download's system lock and get killed
+After=network-online.target xora-image-origin.service tuned.service graphical.target
 Wants=network-online.target
 ConditionPathExists=/run/ostree-booted
 
 [Service]
 Type=oneshot
+# let the desktop finish starting first
+ExecStartPre=/bin/sleep 90
 ExecStart=/usr/lib/xora/hooks/toolkit-fetch
 Nice=10
 IOSchedulingClass=idle
 TimeoutStartSec=8h
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=graphical.target
