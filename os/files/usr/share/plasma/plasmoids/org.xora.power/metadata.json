@@ -1,0 +1,18 @@
+{
+  "KPackageStructure": "Plasma/Applet",
+  "X-Plasma-API-Minimum-Version": "6.0",
+  "X-Plasma-NotificationArea": "true",
+  "X-Plasma-NotificationAreaCategory": "SystemServices",
+  "KPlugin": {
+    "Id": "org.xora.power",
+    "Name": "Power & Session",
+    "Description": "Lock, sleep, restart, shut down, log out",
+    "Icon": "system-shutdown",
+    "Category": "System Information",
+    "EnabledByDefault": true,
+    "Authors": [{ "Name": "XORA OS" }],
+    "License": "GPL-3.0-or-later",
+    "Version": "0.1",
+    "FormFactors": ["desktop", "panel"]
+  }
+}

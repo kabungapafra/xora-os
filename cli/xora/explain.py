@@ -212,7 +212,9 @@ PIP_NAMES = {"yaml": "pyyaml", "cv2": "opencv-python", "PIL": "pillow", "sklearn
 def _pkg_install(cmd):
     osr = Path("/etc/os-release").read_text() if Path("/etc/os-release").exists() else ""
     if Path("/run/ostree-booted").exists():
-        return f"toolbox run sudo dnf install -y {cmd}", "XORA's base system is read-only; install command-line tools inside a toolbox (or `rpm-ostree install` for system-wide)."
+        return (f"xora apps fedora && distrobox enter fedora -- sh -c 'sudo dnf install -y {cmd} && distrobox-export --bin \"$(command -v {cmd})\"'",
+                "XORA's system is read-only, so tools go in its Fedora app container; F2 installs it there and makes "
+                f"`{cmd}` work like a normal command. Apps with a window: `xora install {cmd}`.")
     if "fedora" in osr:
         return f"sudo dnf install -y {cmd}", None
     if re.search(r"ubuntu|debian", osr):

@@ -1,6 +1,6 @@
 [Appearance]
-ColorScheme=XoraKali
-Font=Hack,11,-1,7,400,0,0,0,0,0,0,0,0,0,0,1
+ColorScheme=XoraUbuntu
+Font=Noto Sans Mono,11,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
 
 [General]
 Command=/usr/bin/zsh

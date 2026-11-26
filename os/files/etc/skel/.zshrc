@@ -55,12 +55,19 @@ _xora_git() {
 }
 _xora_space() { [[ -n $XORA_SPACE ]] && print -n "%F{%(#.blue.green)}─[%F{cyan}${XORA_SPACE}%F{%(#.blue.green)}]%f"; }
 
-# ---- Kali two-line prompt. Root: blue frame, red user, '#'
-PROMPT=$'%F{%(#.blue.green)}┌──(%B%F{%(#.red.blue)}%n㉿%m%b%F{%(#.blue.green)})-[%B%F{reset}%(6~.%-1~/…/%4~.%5~)%b%F{%(#.blue.green)}]$(_xora_space)%(?..%F{%(#.blue.green)}─[%F{red}%?%F{%(#.blue.green)}])$(_xora_git)\n%F{%(#.blue.green)}└─%B%(#.%F{red}#.%F{blue}$)%b%F{reset} '
+# ---- prompt: Ubuntu style by default (pafra@xora:~/Projects$), the Kali two-line style with XORA_PROMPT=kali
+_xora_space_short() { [[ -n $XORA_SPACE ]] && print -n " %F{cyan}[${XORA_SPACE}]%f"; }
+if [[ ${XORA_PROMPT:-ubuntu} == kali ]]; then
+  # Kali two-line prompt. Root: blue frame, red user, '#'
+  PROMPT=$'%F{%(#.blue.green)}┌──(%B%F{%(#.red.blue)}%n㉿%m%b%F{%(#.blue.green)})-[%B%F{reset}%(6~.%-1~/…/%4~.%5~)%b%F{%(#.blue.green)}]$(_xora_space)%(?..%F{%(#.blue.green)}─[%F{red}%?%F{%(#.blue.green)}])$(_xora_git)\n%F{%(#.blue.green)}└─%B%(#.%F{red}#.%F{blue}$)%b%F{reset} '
+else
+  # Ubuntu: bold green user@host, bold blue folder; the Space and Git branch after it; red exit code if it failed
+  PROMPT='%B%F{%(#.red.green)}%n@%m%f%b:%B%F{blue}%~%f%b$(_xora_space_short)$(_xora_git)%(?.. %F{red}[%?]%f)%(#.#.$) '
+fi
 RPROMPT=''
 
 # new line between commands, like Kali
-_xora_newline() { [[ -n $_xora_first ]] && print ""; _xora_first=1; }
+_xora_newline() { [[ ${XORA_PROMPT:-ubuntu} == kali && -n $_xora_first ]] && print ""; _xora_first=1; }
 add-zsh-hook precmd _xora_newline
 
 # ---- XORA: F2 runs the fix XORA just suggested

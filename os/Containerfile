@@ -40,7 +40,7 @@ RUN ARCHSKIP="$([ "$(uname -m)" = x86_64 ] || echo --skip-unavailable)"; dnf -y 
 #      (local AI is opt-in with `xora ai enable`: Fedora's ollama brings ~5 GB of GPU libraries,
 #       too heavy for a lean default image on expensive data)
 RUN dnf -y install --skip-unavailable --setopt=install_weak_deps=False sccache nethogs source-foundry-hack-fonts \
-        yaru-icon-theme papirus-icon-theme && dnf clean all
+        yaru-icon-theme papirus-icon-theme qt6-qttools && dnf clean all
 
 # ---- XORA terminal (clean dark window with a header bar) and privacy tools
 #      Anon mode (Tor + kill switch), metadata cleaner, MAC changer, app sandbox, USB device guard, password manager

@@ -2,9 +2,19 @@
 DefaultProfile=XORA.profile
 
 [MainWindow]
-MenuBar=Enabled
+MenuBar=Disabled
 ToolBarsMovable=Disabled
 
 [TabBar]
 TabBarPosition=Top
 NewTabBehavior=PutNewTabAfterCurrentTab
+
+# clean window like the Ubuntu terminal: no toolbars (the menu is on the ☰ button / right-click)
+[MainWindow][Toolbar mainToolBar]
+Hidden=true
+
+[MainWindow][Toolbar sessionToolbar]
+Hidden=true
+
+[KonsoleWindow]
+ShowMenuBarByDefault=false
