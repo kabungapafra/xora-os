@@ -168,6 +168,11 @@ RUN set -eux; \
 RUN sed -i 's|file:///usr/share/wallpapers/Fedora/|file:///usr/share/wallpapers/XORA/|g' /usr/lib/plasmalogin/defaults.conf \
     && grep -q wallpapers/XORA /usr/lib/plasmalogin/defaults.conf
 
+# fonts shipped in /usr/share/fonts/xora, and the GTK/Ptyxis font defaults
+RUN fc-cache -f /usr/share/fonts/xora && fc-list | grep -q "FiraCode Nerd Font Mono" && fc-list | grep -q "Ubuntu Sans" \
+    && glib-compile-schemas /usr/share/glib-2.0/schemas \
+    && grep -q FiraCode /usr/share/glib-2.0/schemas/90-xora.gschema.override
+
 RUN bootc container lint
 
 # ---- last, so changing them never re-runs the package steps above (each build passes a new version):

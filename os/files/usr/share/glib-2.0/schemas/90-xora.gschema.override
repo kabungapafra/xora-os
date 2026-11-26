@@ -1,0 +1,15 @@
+# XORA: the same fonts as the Ubuntu desktop it is modelled on (GTK apps and the Ptyxis terminal)
+[org.gnome.desktop.interface]
+font-name='IBM Plex Sans 10'
+document-font-name='IBM Plex Sans 10'
+monospace-font-name='FiraCode Nerd Font Mono 10'
+font-antialiasing='rgba'
+font-hinting='slight'
+font-rgba-order='rgb'
+
+[org.gnome.desktop.wm.preferences]
+titlebar-font='Ubuntu Sans Bold 11'
+
+[org.gnome.Ptyxis]
+use-system-font=false
+font-name='FiraCode Nerd Font Mono 11'

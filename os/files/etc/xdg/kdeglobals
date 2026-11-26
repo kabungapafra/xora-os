@@ -9,6 +9,12 @@ font=IBM Plex Sans,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
 menuFont=IBM Plex Sans,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
 toolBarFont=IBM Plex Sans,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
 smallestReadableFont=IBM Plex Sans,8,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
+# terminal and code, and window titles, as on the Ubuntu desktop XORA is modelled on
+fixed=FiraCode Nerd Font Mono,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
+# same font smoothing as Ubuntu: subpixel (rgb), slight hinting
+XftAntialias=true
+XftHintStyle=hintslight
+XftSubPixel=rgb
 
 [Icons]
 Theme=XORA
@@ -16,3 +22,6 @@ Theme=XORA
 [KDE]
 LookAndFeelPackage=org.xora.desktop
 widgetStyle=Breeze
+
+[WM]
+activeFont=Ubuntu Sans,11,-1,5,700,0,0,0,0,0,0,0,0,0,0,1
