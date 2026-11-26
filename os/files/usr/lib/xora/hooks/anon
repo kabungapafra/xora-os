@@ -38,11 +38,14 @@ case "${1:-status}" in
   on)
     systemctl start xora-anon-tor.service
     echo "Connecting to Tor…"
+    # only this run of Tor counts (it may have been started earlier)
+    inv="$(systemctl show -p InvocationID --value xora-anon-tor.service)"
+    connected() { journalctl _SYSTEMD_INVOCATION_ID="$inv" -o cat 2>/dev/null | grep -q "Bootstrapped 100%"; }
     for _ in $(seq 1 90); do
-      if journalctl -u xora-anon-tor.service --since "-3min" -o cat | grep -q "Bootstrapped 100%"; then break; fi
+      connected && break
       sleep 1
     done
-    journalctl -u xora-anon-tor.service --since "-3min" -o cat | grep -q "Bootstrapped 100%" \
+    connected \
       || { echo "Tor didn't connect within 90 seconds; Anon mode not enabled (nothing changed)."; systemctl stop xora-anon-tor.service; exit 1; }
     nft delete table inet $TABLE 2>/dev/null || true
     rules | nft -f -

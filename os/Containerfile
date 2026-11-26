@@ -124,7 +124,7 @@ RUN set -eux; \
     #
     # every new user gets ~/Projects (the Files sidebar's Projects place)
     mkdir -p /etc/skel/Projects; \
-    # zsh for every new user, with the Kali-style XORA prompt from /etc/skel/.zshrc
+    # zsh for every new user: ~/.zshrc loads XORA's shell config from /usr/share/xora/zshrc (updates with the OS)
     sed -i 's|^SHELL=.*|SHELL=/usr/bin/zsh|' /etc/default/useradd; \
     #
     # system services

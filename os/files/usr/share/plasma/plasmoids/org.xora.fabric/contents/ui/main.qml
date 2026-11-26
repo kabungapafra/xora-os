@@ -46,7 +46,9 @@ PlasmoidItem {
                 spacing: 6
                 Kirigami.Icon { source: "network-workgroup"; implicitWidth: 14; implicitHeight: 14; color: "#67DAF7"; isMask: true }
                 PC3.Label {
-                    text: "Fabric · " + (root.st.devices || 1) + (root.st.devices === 1 ? " device" : " devices")
+                    // devices counts this computer too: with nothing linked, invite linking instead of "1 device"
+                    text: (root.st.devices || 1) <= 1 ? "Fabric · link a device"
+                          : "Fabric · " + root.st.devices + " devices"
                          + (root.st.queued_jobs ? " · " + root.st.queued_jobs + " queued" : "")
                     color: "#67DAF7"
                     font.pixelSize: 12

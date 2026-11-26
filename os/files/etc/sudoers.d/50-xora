@@ -1,0 +1,2 @@
+# XORA: no "usual lecture" message on first sudo (like Ubuntu)
+Defaults lecture=never

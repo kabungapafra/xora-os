@@ -280,11 +280,11 @@ def cmd_resilience(a):
         return
     cap, st = _battery()
     print(bold("Resilience"))
-    print(f"  power        " + (f"battery {cap}% ({st.lower()})" if cap is not None else "mains (no battery)"))
+    print("  power        " + (f"battery {cap}% ({st.lower()})" if cap is not None else "mains (no battery)"))
     ups = out(["upsc", "-l"]) if have("upsc") else ""
-    print(f"  UPS          " + (green(ups) if ups else dim("none configured (install a UPS and run: sudo nut-scanner)")))
+    print("  UPS          " + (green(ups) if ups else dim("none configured (install a UPS and run: sudo nut-scanner)")))
     timer = out(["systemctl", "--user", "is-active", "xora-resilience.service"])
-    print(f"  watcher      " + (green("running") if timer == "active" else yellow("off — systemctl --user enable --now xora-resilience")))
+    print("  watcher      " + (green("running") if timer == "active" else yellow("off — systemctl --user enable --now xora-resilience")))
     print(f"  checkpoints  every {s['checkpoint_minutes']} min while a Space is open; at {s['low_battery']}% battery all Spaces are saved "
           f"and databases stopped cleanly; at {s['critical_battery']}% the computer hibernates")
 
@@ -388,7 +388,7 @@ def cmd_ai(a):
         else:
             run(["podman", "start", AI_CONTAINER], capture=True)
         if run(["podman", "exec", AI_CONTAINER, "ollama", "pull", model]).returncode == 0:
-            ok(f"local AI is on. Try in the terminal:  # why is my computer slow?")
+            ok("local AI is on. Try in the terminal:  # why is my computer slow?")
         return
     if a.action == "disable":
         run(["podman", "stop", AI_CONTAINER], capture=True)

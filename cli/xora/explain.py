@@ -147,12 +147,15 @@ def check_network():
         internet = True
     except OSError:
         internet = False
+    previous = socket.getdefaulttimeout()
     try:
         socket.setdefaulttimeout(3)
         socket.gethostbyname("fedoraproject.org")
         dns = True
     except OSError:
         dns = False
+    finally:
+        socket.setdefaulttimeout(previous)      # don't leave a 3 s limit on everything else in this process
     if not internet:
         return ("bad", "Your router works but there's no internet behind it.",
                 "The provider's line is down or your bundle/data has run out.", None)
