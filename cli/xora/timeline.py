@@ -46,7 +46,7 @@ def _count(p):
     return files, size
 
 
-def snapshot(path, reason, space=None):
+def snapshot(path, reason, space=None, batch=None):
     """Copy `path` into the timeline store. Returns the entry."""
     src = Path(path).absolute()
     if not src.exists() and not src.is_symlink():
@@ -63,7 +63,7 @@ def snapshot(path, reason, space=None):
     files, size = _count(target)
     entry = {"id": sid, "path": str(src), "reason": reason, "at": time.time(), "files": files,
              "size": size, "kind": "dir" if src.is_dir() and not src.is_symlink() else "file",
-             "space": space, "restored": False}
+             "space": space, "restored": False, "batch": batch}
     idx = _index()
     idx.insert(0, entry)
     _save(idx)
@@ -256,6 +256,7 @@ def cmd_rm(a):
     recursive = any(c in flags for c in "rR") or a.recursive
     force = "f" in flags or a.force
     code = 0
+    batch = uuid.uuid4().hex[:8]           # one rm = one undo, however many files and folders it names
     for p in a.paths:
         path = Path(p)
         if not path.exists() and not path.is_symlink():
@@ -273,7 +274,7 @@ def cmd_rm(a):
             code = 1
             continue
         try:
-            e = snapshot(path, f"rm {' '.join(a.raw)}", space)
+            e = snapshot(path, f"rm {' '.join(a.raw)}", space, batch)
         except Exception as ex:
             print(red(f"rm: '{p}': snapshot failed ({ex}); NOT deleting. Use /bin/rm to delete without a snapshot."))
             code = 1
@@ -291,10 +292,14 @@ def cmd_rm(a):
 
 def cmd_undo(a):
     e = _find(a.id)
-    dest = restore(e)
-    ok(f"Restored {dest} ({e['files']:,} files) from snapshot {e['id']}")
-    if str(dest) != e["path"]:
-        warn(f"{e['path']} already exists, so the old version was put next to it instead of overwriting it")
+    group = [e]
+    if not a.id and e.get("batch"):        # bring back everything the last rm deleted, not only its last item
+        group = [x for x in _index() if x.get("batch") == e["batch"] and not x.get("restored")]
+    for e in reversed(group):
+        dest = restore(e)
+        ok(f"Restored {tilde(str(dest))} ({e['files']:,} files) from snapshot {e['id']}")
+        if str(dest) != e["path"]:
+            warn(f"{e['path']} already exists, so the old version was put next to it instead of overwriting it")
 
 
 def cmd_snap(a):
@@ -340,8 +345,25 @@ def cmd_show(a):
                     return
     if not Path(e["path"]).exists():
         print(green(f"Restoring will recreate {e['path']}."))
-    else:
-        print(yellow(f"{e['path']} exists now, so restoring will create {Path(e['path']).name}.restored-{e['id']} next to it."))
+        return
+    # it exists now: show exactly what a merge restore would do (nothing newer is lost)
+    p = preview(e)
+    if p.get("error"):
+        print(yellow(p["error"]))
+        return
+    print(bold("\nIf you restore this (xora timeline restore " + e["id"] + " --merge):"))
+    for c in p["changed"]:
+        delta = f"  (+{c['plus']} −{c['minus']} lines)" if c["plus"] is not None else ""
+        print(f"  {yellow('put back')}  {c['path']}{dim(delta)}")
+    for m in p["missing"]:
+        print(f"  {green('bring back')} {m['path']}  {dim('(deleted since)')}")
+    for x in p["extra"]:
+        print(f"  {cyan('keep')}      {x['path']}  {dim('(created since: left as it is)')}")
+    if not (p["changed"] or p["missing"]):
+        print(dim("  nothing to restore: every file is the same as in this snapshot"))
+    print(dim(f"  {p['same']} file(s) unchanged" + (" · Git history is kept" if p["git"] else "")
+              + " · the current state is snapshotted first, so the restore can itself be undone"))
+    print(dim(f"  Or restore beside it instead: xora timeline restore {e['id']}  (→ {Path(e['path']).name}.restored-{e['id']})"))
 
 
 def cmd_restore(a):

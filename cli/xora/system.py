@@ -15,7 +15,7 @@ SETTINGS = CONFIG / "settings.yaml"
 
 
 def settings():
-    s = {"resilience": {"checkpoint_minutes": 30, "low_battery": 15, "critical_battery": 7}}
+    s = {"resilience": {"checkpoint_minutes": 5, "low_battery": 15, "critical_battery": 7}}
     s.update(load_yaml(SETTINGS, {}) or {})
     return s
 
@@ -243,8 +243,44 @@ def _battery():
     return None, None
 
 
-def checkpoint_all(reason):
-    """Save every open Space: snapshot files, then stop databases cleanly so they recover safely."""
+SKIP_DIRS = {"node_modules", ".venv", "venv", "__pycache__", ".gradle", ".dart_tool", "target", ".cache", ".tox"}
+
+
+def _changed_since(path, t, budget=20000):
+    """True if anything under `path` was modified after time `t` (stops at the first hit)."""
+    stack = [str(path)]
+    seen = 0
+    while stack:
+        try:
+            it = os.scandir(stack.pop())
+        except OSError:
+            continue
+        with it:
+            for e in it:
+                seen += 1
+                if seen > budget:            # a huge tree: assume it changed rather than scan for long
+                    return True
+                try:
+                    st = e.stat(follow_symlinks=False)
+                except OSError:
+                    continue
+                if st.st_mtime > t:
+                    return True
+                if e.is_dir(follow_symlinks=False) and e.name not in SKIP_DIRS:
+                    stack.append(e.path)
+    return False
+
+
+def _to_disk():
+    """Checkpoints must survive the power going out right after: flush them from memory to the disk."""
+    try:
+        os.sync()
+    except OSError:
+        pass
+
+
+def checkpoint_all(reason, stop_services=True):
+    """Save every open Space: snapshot files, then (stop_services) stop databases cleanly so they recover safely."""
     from .spaces import ACTIVE_FILE, all_names, load, project_dir, _running_containers
     from .timeline import snapshot
     running = _running_containers()
@@ -262,9 +298,10 @@ def checkpoint_all(reason):
                 saved += 1
             except Exception as e:
                 err(f"{n}: {e}")
-        for s in live:
+        for s in live if stop_services else []:
             # databases flush and close files on a clean stop; a power cut mid-write is what corrupts them
             run(["podman", "stop", "-t", "20", f"xora-{n}-{s['name']}"], capture=True)
+    _to_disk()
     return saved
 
 
@@ -288,18 +325,33 @@ def cmd_resilience(a):
     print("  UPS          " + (green(ups) if ups else dim("none configured (install a UPS and run: sudo nut-scanner)")))
     timer = out(["systemctl", "--user", "is-active", "xora-resilience.service"])
     print("  watcher      " + (green("running") if timer == "active" else yellow("off — systemctl --user enable --now xora-resilience")))
-    print(f"  checkpoints  every {s['checkpoint_minutes']} min while a Space is open; at {s['low_battery']}% battery all Spaces are saved "
+    print(f"  checkpoints  every {s['checkpoint_minutes']} min while a Space is open (only if something changed), "
+          f"and at once when mains power goes off; at {s['low_battery']}% battery all Spaces are saved "
           f"and databases stopped cleanly; at {s['critical_battery']}% the computer hibernates")
 
 
 def _watch(s):
-    """Long-running user service: periodic checkpoints + low-battery actions."""
-    last_ck = 0
+    """Long-running user service. Power cuts are handled before they happen, not at the last second:
+    - every few minutes (default 5) the open Space is checkpointed if anything in it changed, and the
+      checkpoint is flushed to disk, so a desktop losing power without warning loses minutes at most;
+    - the moment mains power goes away (laptop or UPS switches to battery) every open Space is
+      checkpointed straight away, while there is still plenty of power;
+    - at low battery databases are stopped cleanly; at critical battery the computer hibernates."""
+    last_ck = 0.0
     acted_low = acted_crit = False
+    was_on_battery = None
     info("resilience watcher started")
     while True:
         cap, st = _battery()
         now = time.time()
+        on_battery = cap is not None and st == "Discharging"
+        if on_battery and was_on_battery is False:
+            n = checkpoint_all("power cut: switched to battery", stop_services=False)
+            last_ck = now
+            if n:
+                run(["notify-send", "-u", "normal", "XORA: on battery",
+                     f"Mains power is off. {n} open Space(s) saved."], capture=True)
+        was_on_battery = on_battery
         if now - last_ck > s["checkpoint_minutes"] * 60:
             from .spaces import ACTIVE_FILE
             if ACTIVE_FILE.exists():
@@ -307,11 +359,14 @@ def _watch(s):
                 from .spaces import load, project_dir
                 try:
                     n = ACTIVE_FILE.read_text().strip()
-                    snapshot(project_dir(load(n)), "automatic checkpoint", n)
+                    d = project_dir(load(n))
+                    if d.exists() and (not last_ck or _changed_since(d, last_ck)):
+                        snapshot(d, "automatic checkpoint", n)
+                        _to_disk()
                 except (Exception, SystemExit):
                     pass
             last_ck = now
-        if cap is not None and st == "Discharging":
+        if on_battery:
             if cap <= s["low_battery"] and not acted_low:
                 checkpoint_all(f"battery {cap}%")
                 run(["notify-send", "-u", "critical", "XORA: battery low", f"{cap}% left. Your Spaces are saved."], capture=True)

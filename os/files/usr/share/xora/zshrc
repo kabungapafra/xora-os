@@ -113,11 +113,56 @@ add-zsh-hook preexec _xora_mark_start
 precmd_functions=(_xora_failed ${precmd_functions:#_xora_failed})   # first: it needs the exit status
 
 # ---- XORA: run any command on another device:  on office-pc flutter build apk  ·  on auto make -j16
+# ---- XORA: run a command on another of your devices (Fabric)
+#   on office-pc make -j16     run there        on auto make     the least busy device
+#   on make -j16               pick the device from a list        Alt+R  same, for the line you typed
+_xora_devices() {
+  local f="${XDG_CONFIG_HOME:-$HOME/.config}/xora/devices.yaml"
+  [[ -r $f ]] && sed -n 's/^\([^ #][^:]*\):.*$/\1/p' "$f"
+}
+_xora_pick_device() {   # prints the chosen device name; returns 1 if none or cancelled
+  local -a devs; devs=(auto ${(f)"$(_xora_devices)"})
+  if (( ${#devs} < 2 )); then
+    print -u2 "No linked devices yet. Link one in XORA Center › Devices (or: xora fabric invite)."; return 1
+  fi
+  print -u2 "Run on:"
+  local i=1 d
+  for d in $devs; do
+    if [[ $d == auto ]]; then print -u2 "  $i) auto   (the least busy device)"; else print -u2 "  $i) $d"; fi
+    (( i++ ))
+  done
+  local n; read -r "n?Number (Enter = auto): " </dev/tty
+  [[ -z $n ]] && n=1
+  [[ $n == <-> ]] && (( n >= 1 && n <= ${#devs} )) || { print -u2 "cancelled"; return 1; }
+  print -r -- ${devs[$n]}
+}
 on() {
-  if (( $# < 2 )); then print "usage: on <device|auto> <command…>   (devices: xora fabric ls)"; return 2; fi
-  local dev=$1; shift
+  local dev
+  if (( $# == 0 )); then
+    dev=$(_xora_pick_device) || return 1
+    local cmd; read -r "cmd?Command to run on $dev: " </dev/tty
+    [[ -n $cmd ]] || return 1
+    xora fabric run --on "$dev" -- ${(z)cmd}; return
+  fi
+  if [[ $1 == auto ]] || _xora_devices | grep -qxF -- "$1"; then
+    dev=$1; shift
+  else
+    dev=$(_xora_pick_device) || return 1
+  fi
+  (( $# )) || { print -u2 "usage: on [device|auto] <command…>"; return 2; }
   xora fabric run --on "$dev" -- "$@"
 }
+_xora_on_complete() { (( CURRENT == 2 )) && compadd auto ${(f)"$(_xora_devices)"} || _normal; }
+(( $+functions[compdef] )) && compdef _xora_on_complete on
+_xora_run_on_widget() {
+  [[ -z $BUFFER ]] && return
+  zle -I
+  local dev; dev=$(_xora_pick_device) || { zle reset-prompt; return; }
+  BUFFER="on $dev $BUFFER"
+  zle .accept-line
+}
+zle -N _xora_run_on_widget
+bindkey '^[r' _xora_run_on_widget
 
 # ---- XORA: a line starting with '# ' is a question in plain words
 _xora_accept_line() {
